@@ -85,19 +85,16 @@ export class AppController {
 
   @Delete(":id")
   deleteMovie(@Param("id") id: string) {
-    const movie = this.movies.find(
+    const movieIndex = this.movies.findIndex(
       (movie) => movie.id === Number(id),
     );
-
-    if (!movie) {
+    if (movieIndex === -1) {
       throw new NotFoundException(
         "존재하지 않는 영화입니다.",
       );
     }
 
-    this.movies = this.movies.filter(
-      (movie) => movie.id !== Number(id),
-    );
-    return movie;
+    this.movies.splice(movieIndex, 1);
+    return movieIndex;
   }
 }
