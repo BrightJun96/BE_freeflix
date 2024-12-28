@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -7,12 +8,14 @@ import {
   Patch,
   Post,
   Query,
+  UseInterceptors,
 } from "@nestjs/common";
 import { CreateMovieDto } from "./dto/create-movie.dto";
 import { UpdateMovieDto } from "./dto/update-movie.dto";
 import { MovieService } from "./movie.service";
 
 @Controller("movie")
+@UseInterceptors(ClassSerializerInterceptor)
 export class MovieController {
   constructor(
     private readonly movieService: MovieService,
