@@ -54,6 +54,9 @@ export class MovieService {
     const newMovie = {
       id: this.counter++,
       ...createMovieDto,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      version: 0,
     };
 
     this.movies.push(newMovie);
