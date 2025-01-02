@@ -1,13 +1,12 @@
 import {
+  BaseEntity,
   Column,
-  CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
-  VersionColumn,
 } from "typeorm";
 
 @Entity()
-export class Movie {
+export class Movie extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -16,13 +15,4 @@ export class Movie {
 
   @Column()
   genre: string;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @CreateDateColumn()
-  updatedAt: Date;
-
-  @VersionColumn()
-  version: number;
 }
