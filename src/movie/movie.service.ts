@@ -3,7 +3,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { ILike, Repository } from "typeorm";
 import { CreateMovieDto } from "./dto/create-movie.dto";
 import { UpdateMovieDto } from "./dto/update-movie.dto";
 import { Movie } from "./entities/movie.entity";
@@ -16,10 +16,14 @@ export class MovieService {
   ) {}
 
   // 목록 조회
-  getManyMovies(title?: string) {
-    // @todo title filter 기능 추가
+  async getManyMovies(title?: string) {
+    if (!title) return await this.movieRepository.find();
 
-    return this.movieRepository.find();
+    return await this.movieRepository.find({
+      where: {
+        title: ILike(`%${title}%`),
+      },
+    });
 
     // if (!title) return this.movies;
     //

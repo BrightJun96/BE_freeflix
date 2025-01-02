@@ -35,6 +35,7 @@ import { MovieModule } from "./movie/movie.module";
         database: configService.get<string>("DB_DATABASE"),
         entities: [Movie],
         synchronize: true,
+        logging: true,
       }),
       inject: [ConfigService],
     }),
