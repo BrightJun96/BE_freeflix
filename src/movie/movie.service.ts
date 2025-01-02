@@ -10,40 +10,31 @@ import { Movie } from "./entities/movie.entity";
 
 @Injectable()
 export class MovieService {
-  private movies: Movie[] = [];
-  private counter = 3;
-
   constructor(
     @InjectRepository(Movie)
     private readonly movieRepository: Repository<Movie>,
-  ) {
-    const movie1 = new Movie();
-    movie1.id = 1;
-    movie1.title = "영화1";
-    movie1.genre = "장르1";
-
-    const movie2 = new Movie();
-    movie2.id = 2;
-    movie2.title = "영화2";
-    movie2.genre = "장르2";
-
-    this.movies.push(movie1, movie2);
-  }
+  ) {}
 
   // 목록 조회
   getManyMovies(title?: string) {
-    if (!title) return this.movies;
+    // @todo title filter 기능 추가
 
-    return this.movies.filter((movie) =>
-      movie.title.startsWith(title),
-    );
+    return this.movieRepository.find();
+
+    // if (!title) return this.movies;
+    //
+    // return this.mvies.filter((movie) =>
+    //   movie.title.startsWith(title),
+    // );
   }
 
   // 상세 조회
-  getMovieById(id: number) {
-    const movie = this.movies.find(
-      (movie) => movie.id === id,
-    );
+  async getMovieById(id: number) {
+    const movie = await this.movieRepository.findOne({
+      where: {
+        id,
+      },
+    });
 
     if (!movie) {
       throw new NotFoundException(
@@ -55,25 +46,20 @@ export class MovieService {
   }
 
   // 생성
-  createMovie(createMovieDto: CreateMovieDto) {
-    const newMovie = {
-      id: this.counter++,
-      ...createMovieDto,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      version: 0,
-    };
-
-    this.movies.push(newMovie);
-
-    return newMovie;
+  async createMovie(createMovieDto: CreateMovieDto) {
+    return await this.movieRepository.save(createMovieDto);
   }
 
   // 수정
-  updateMovie(id: number, updateMovieDto: UpdateMovieDto) {
-    const movie = this.movies.find(
-      (movie) => movie.id === id,
-    );
+  async updateMovie(
+    id: number,
+    updateMovieDto: UpdateMovieDto,
+  ) {
+    const movie = await this.movieRepository.findOne({
+      where: {
+        id,
+      },
+    });
 
     if (!movie) {
       throw new NotFoundException(
@@ -81,24 +67,29 @@ export class MovieService {
       );
     }
 
-    Object.assign(movie, updateMovieDto);
+    await this.movieRepository.update(id, updateMovieDto);
 
-    return movie;
+    return await this.movieRepository.findOne({
+      where: {
+        id,
+      },
+    });
   }
 
   // 삭제
-  deleteMovie(id: number) {
-    const movieIndex = this.movies.findIndex(
-      (movie) => movie.id === id,
-    );
-
-    if (movieIndex === -1) {
+  async deleteMovie(id: number) {
+    const movie = await this.movieRepository.findOne({
+      where: {
+        id,
+      },
+    });
+    if (!movie) {
       throw new NotFoundException(
         "존재하지 않는 영화입니다.",
       );
     }
 
-    this.movies.splice(movieIndex, 1);
-    return movieIndex;
+    await this.movieRepository.delete(id);
+    return movie;
   }
 }
