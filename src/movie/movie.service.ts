@@ -24,12 +24,6 @@ export class MovieService {
         title: ILike(`%${title}%`),
       },
     });
-
-    // if (!title) return this.movies;
-    //
-    // return this.mvies.filter((movie) =>
-    //   movie.title.startsWith(title),
-    // );
   }
 
   // 상세 조회
