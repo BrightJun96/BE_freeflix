@@ -2,11 +2,13 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToMany,
   ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Director } from "../../director/entities/director.entity";
+import { Genre } from "../../genre/entities/genre.entity";
 import { BaseTable } from "../../shared/base-table";
 import { MovieDetail } from "./movie-detail.entity";
 
@@ -15,17 +17,20 @@ export class Movie extends BaseTable {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({
+    unique: true,
+  })
   title: string;
 
-  @Column()
-  genre: string;
+  @ManyToMany(() => Genre, (genre) => genre.movies)
+  genres: Genre[];
 
   @OneToOne(
     () => MovieDetail,
     (movieDetail) => movieDetail.id,
     {
       cascade: true,
+      nullable: false,
     },
   )
   @JoinColumn()
@@ -33,6 +38,7 @@ export class Movie extends BaseTable {
 
   @ManyToOne(() => Director, (director) => director.id, {
     cascade: true,
+    nullable: false,
   })
   director: Director;
 }
