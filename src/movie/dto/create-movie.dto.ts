@@ -9,4 +9,7 @@ export class CreateMovieDto {
 
   @IsNotEmpty()
   detail: string; // 상세 내용
+
+  @IsNotEmpty()
+  directorId: number; // 감독 ID
 }
