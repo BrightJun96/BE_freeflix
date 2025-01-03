@@ -5,10 +5,11 @@ import {
 } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import * as Joi from "joi";
+import { DirectorModule } from "./director/director.module";
+import { Director } from "./director/entities/director.entity";
 import { MovieDetail } from "./movie/entities/movie-detail.entity";
 import { Movie } from "./movie/entities/movie.entity";
 import { MovieModule } from "./movie/movie.module";
-import { DirectorModule } from './director/director.module';
 
 @Module({
   imports: [
@@ -35,7 +36,7 @@ import { DirectorModule } from './director/director.module';
         username: configService.get<string>("DB_USERNAME"),
         password: configService.get<string>("DB_PASSWORD"),
         database: configService.get<string>("DB_DATABASE"),
-        entities: [Movie, MovieDetail],
+        entities: [Movie, MovieDetail, Director],
         synchronize: true,
         logging: true,
       }),

@@ -20,7 +20,7 @@ export class MovieService {
   ) {}
 
   // 목록 조회
-  async getManyMovies(title?: string) {
+  async findAll(title?: string) {
     if (!title)
       return await this.movieRepository.find({
         relations: [Relations.DETAIL],
@@ -35,16 +35,7 @@ export class MovieService {
   }
 
   // 상세 조회
-
-  // 생성
-  async createMovie(createMovieDto: CreateMovieDto) {
-    return await this.movieRepository.save({
-      title: createMovieDto.title,
-      genre: createMovieDto.genre,
-      detail: { detail: createMovieDto.detail },
-    });
-  }
-  async getMovieById(id: number) {
+  async findOne(id: number) {
     const movie = await this.movieRepository.findOne({
       where: {
         id,
@@ -61,11 +52,17 @@ export class MovieService {
     return movie;
   }
 
+  // 생성
+  async create(createMovieDto: CreateMovieDto) {
+    return await this.movieRepository.save({
+      title: createMovieDto.title,
+      genre: createMovieDto.genre,
+      detail: { detail: createMovieDto.detail },
+    });
+  }
+
   // 수정
-  async updateMovie(
-    id: number,
-    updateMovieDto: UpdateMovieDto,
-  ) {
+  async update(id: number, updateMovieDto: UpdateMovieDto) {
     const movie = await this.movieRepository.findOne({
       where: {
         id,
@@ -99,7 +96,7 @@ export class MovieService {
   }
 
   // 삭제
-  async deleteMovie(id: number) {
+  async remove(id: number) {
     const movie = await this.movieRepository.findOne({
       where: {
         id,
