@@ -3,8 +3,9 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { ILike, Repository } from "typeorm";
+import { ILike, In, Repository } from "typeorm";
 import { Director } from "../director/entities/director.entity";
+import { Genre } from "../genre/entities/genre.entity";
 import { Relations } from "./constant/relations";
 import { CreateMovieDto } from "./dto/create-movie.dto";
 import { UpdateMovieDto } from "./dto/update-movie.dto";
@@ -20,20 +21,30 @@ export class MovieService {
     private readonly movieDetailRepository: Repository<MovieDetail>,
     @InjectRepository(Director)
     private readonly directorRepository: Repository<Director>,
+    @InjectRepository(Genre)
+    private readonly genreRepository: Repository<Genre>,
   ) {}
 
   // 목록 조회
   async findAll(title?: string) {
     if (!title)
       return await this.movieRepository.find({
-        relations: [Relations.DETAIL, Relations.DIRECTOR],
+        relations: [
+          Relations.DETAIL,
+          Relations.DIRECTOR,
+          Relations.GENRES,
+        ],
       });
 
     return await this.movieRepository.find({
       where: {
         title: ILike(`%${title}%`),
       },
-      relations: [Relations.DETAIL, Relations.DIRECTOR],
+      relations: [
+        Relations.DETAIL,
+        Relations.DIRECTOR,
+        Relations.GENRES,
+      ],
     });
   }
 
@@ -43,7 +54,11 @@ export class MovieService {
       where: {
         id,
       },
-      relations: [Relations.DETAIL, Relations.DIRECTOR],
+      relations: [
+        Relations.DETAIL,
+        Relations.DIRECTOR,
+        Relations.GENRES,
+      ],
     });
 
     if (!movie) {
@@ -57,60 +72,37 @@ export class MovieService {
 
   // 생성
   async create(createMovieDto: CreateMovieDto) {
-    const director = await this.directorRepository.findOne({
-      where: {
-        id: createMovieDto.directorId,
-      },
-    });
+    const genres = await this.findGenres(
+      createMovieDto.genreIds,
+    );
 
-    if (!director) {
-      throw new NotFoundException(
-        "존재하지 않는 감독입니다.",
-      );
-    }
+    const director = await this.findDirector(
+      createMovieDto.directorId,
+    );
 
     return await this.movieRepository.save({
       title: createMovieDto.title,
-      genre: createMovieDto.genre,
       detail: { detail: createMovieDto.detail },
       director,
+      genres,
     });
   }
 
   // 수정
   async update(id: number, updateMovieDto: UpdateMovieDto) {
-    const movie = await this.movieRepository.findOne({
-      where: {
-        id,
-      },
-      relations: [Relations.DETAIL],
-    });
+    const movie = await this.findOne(id);
 
-    if (!movie) {
-      throw new NotFoundException(
-        "존재하지 않는 영화입니다.",
-      );
-    }
-
-    const { detail, directorId, ...movieRest } =
+    const { detail, directorId, genreIds, ...movieRest } =
       updateMovieDto;
 
     let newDirector: Director;
     if (directorId) {
-      const director =
-        await this.directorRepository.findOne({
-          where: {
-            id: directorId,
-          },
-        });
+      newDirector = await this.findDirector(directorId);
+    }
 
-      if (!director) {
-        throw new NotFoundException(
-          "존재하지 않는 감독입니다.",
-        );
-      }
-
-      newDirector = director;
+    let newGenres: Genre[];
+    if (genreIds) {
+      newGenres = await this.findGenres(genreIds);
     }
 
     const movieUpdateFields = {
@@ -130,11 +122,29 @@ export class MovieService {
       );
     }
 
-    return await this.movieRepository.findOne({
+    const newMovie = await this.movieRepository.findOne({
       where: {
         id,
       },
-      relations: [Relations.DETAIL, Relations.DIRECTOR],
+      relations: [
+        Relations.DETAIL,
+        Relations.DIRECTOR,
+        Relations.GENRES,
+      ],
+    });
+    newMovie.genres = newGenres;
+
+    await this.movieRepository.save(newMovie);
+
+    return this.movieRepository.findOne({
+      where: {
+        id,
+      },
+      relations: [
+        Relations.DETAIL,
+        Relations.DIRECTOR,
+        Relations.GENRES,
+      ],
     });
   }
 
@@ -159,5 +169,40 @@ export class MovieService {
     );
 
     return movie;
+  }
+
+  // 장르 찾기
+  async findGenres(genreIds: number[]) {
+    const genres = await this.genreRepository.find({
+      where: {
+        id: In(genreIds),
+      },
+    });
+
+    if (genres.length !== genreIds.length) {
+      throw new NotFoundException(
+        "존재하지 않는 장르가 있습니다 ." +
+          `존재하는 Ids : ${genres.map((genre) => genre.id).join(",")}`,
+      );
+    }
+
+    return genres;
+  }
+
+  // 감독 찾기
+  async findDirector(directorId: number) {
+    const director = await this.directorRepository.findOne({
+      where: {
+        id: directorId,
+      },
+    });
+
+    if (!director) {
+      throw new NotFoundException(
+        "존재하지 않는 감독입니다.",
+      );
+    }
+
+    return director;
   }
 }
