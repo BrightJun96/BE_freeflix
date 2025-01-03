@@ -8,6 +8,7 @@ import * as Joi from "joi";
 import { MovieDetail } from "./movie/entities/movie-detail.entity";
 import { Movie } from "./movie/entities/movie.entity";
 import { MovieModule } from "./movie/movie.module";
+import { DirectorModule } from './director/director.module';
 
 @Module({
   imports: [
@@ -36,7 +37,7 @@ import { MovieModule } from "./movie/movie.module";
         database: configService.get<string>("DB_DATABASE"),
         entities: [Movie, MovieDetail],
         synchronize: true,
-        // logging: true,
+        logging: true,
       }),
       inject: [ConfigService],
     }),
@@ -51,6 +52,7 @@ import { MovieModule } from "./movie/movie.module";
     //   synchronize: true,
     // }),
     MovieModule,
+    DirectorModule,
   ],
 })
 export class AppModule {}
