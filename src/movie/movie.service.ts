@@ -4,8 +4,10 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ILike, Repository } from "typeorm";
+import { Relations } from "./constant/relations";
 import { CreateMovieDto } from "./dto/create-movie.dto";
 import { UpdateMovieDto } from "./dto/update-movie.dto";
+import { MovieDetail } from "./entities/movie-detail.entity";
 import { Movie } from "./entities/movie.entity";
 
 @Injectable()
@@ -13,25 +15,46 @@ export class MovieService {
   constructor(
     @InjectRepository(Movie)
     private readonly movieRepository: Repository<Movie>,
+    @InjectRepository(MovieDetail)
+    private readonly movieDetailRepository: Repository<MovieDetail>,
   ) {}
 
   // 목록 조회
   async getManyMovies(title?: string) {
-    if (!title) return await this.movieRepository.find();
+    if (!title)
+      return await this.movieRepository.find({
+        relations: [Relations.DETAIL],
+      });
 
     return await this.movieRepository.find({
       where: {
         title: ILike(`%${title}%`),
       },
+      relations: [Relations.DETAIL],
     });
   }
 
   // 상세 조회
+
+  // 생성
+  async createMovie(createMovieDto: CreateMovieDto) {
+    const movieDetail =
+      await this.movieDetailRepository.save({
+        detail: createMovieDto.detail,
+      });
+
+    return await this.movieRepository.save({
+      title: createMovieDto.title,
+      genre: createMovieDto.genre,
+      detail: movieDetail,
+    });
+  }
   async getMovieById(id: number) {
     const movie = await this.movieRepository.findOne({
       where: {
         id,
       },
+      relations: [Relations.DETAIL],
     });
 
     if (!movie) {
@@ -43,11 +66,6 @@ export class MovieService {
     return movie;
   }
 
-  // 생성
-  async createMovie(createMovieDto: CreateMovieDto) {
-    return await this.movieRepository.save(createMovieDto);
-  }
-
   // 수정
   async updateMovie(
     id: number,
@@ -57,6 +75,7 @@ export class MovieService {
       where: {
         id,
       },
+      relations: [Relations.DETAIL],
     });
 
     if (!movie) {
@@ -65,12 +84,22 @@ export class MovieService {
       );
     }
 
-    await this.movieRepository.update(id, updateMovieDto);
+    const { detail, ...movieRest } = updateMovieDto;
+
+    await this.movieRepository.update(id, movieRest);
+
+    if (detail) {
+      await this.movieDetailRepository.update(
+        movie.detail.id,
+        { detail },
+      );
+    }
 
     return await this.movieRepository.findOne({
       where: {
         id,
       },
+      relations: [Relations.DETAIL],
     });
   }
 
@@ -80,6 +109,7 @@ export class MovieService {
       where: {
         id,
       },
+      relations: [Relations.DETAIL],
     });
     if (!movie) {
       throw new NotFoundException(
@@ -88,6 +118,11 @@ export class MovieService {
     }
 
     await this.movieRepository.delete(id);
+
+    await this.movieDetailRepository.delete(
+      movie.detail.id,
+    );
+
     return movie;
   }
 }
