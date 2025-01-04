@@ -255,8 +255,6 @@ export class MovieService {
         // );
       }
 
-      throw new NotFoundException("에러 일부러 발생");
-
       // 장르 수정
 
       if (newGenres) {
