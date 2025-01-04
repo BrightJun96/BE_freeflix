@@ -12,7 +12,7 @@ export class PositiveIntPipe
   transform(value: number): number {
     if (value <= 0) {
       throw new BadRequestException(
-        `0이상의 숫자를 입력해주세요. 입력값: ${value}`,
+        `0이상의 숫자를 입력해주세요.`,
       );
     }
     return value;
