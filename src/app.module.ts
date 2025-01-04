@@ -40,7 +40,7 @@ import { MovieModule } from "./movie/movie.module";
         database: configService.get<string>("DB_DATABASE"),
         entities: [Movie, MovieDetail, Director, Genre],
         synchronize: true,
-        logging: true,
+        // logging: true,
       }),
       inject: [ConfigService],
     }),

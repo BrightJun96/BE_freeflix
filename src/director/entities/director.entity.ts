@@ -1,4 +1,8 @@
 import {
+  ClassSerializerInterceptor,
+  UseInterceptors,
+} from "@nestjs/common";
+import {
   Column,
   Entity,
   OneToMany,
@@ -8,6 +12,7 @@ import { Movie } from "../../movie/entities/movie.entity";
 import { BaseTable } from "../../shared/entity/base-table";
 
 @Entity()
+@UseInterceptors(ClassSerializerInterceptor)
 export class Director extends BaseTable {
   @PrimaryGeneratedColumn()
   id: number;

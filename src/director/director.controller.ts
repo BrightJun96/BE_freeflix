@@ -4,9 +4,11 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
 } from "@nestjs/common";
+import { PositiveIntPipe } from "../shared/pipe/positive-int-pipe";
 import { DirectorService } from "./director.service";
 import { CreateDirectorDto } from "./dto/create-director.dto";
 import { UpdateDirectorDto } from "./dto/update-director.dto";
@@ -28,13 +30,15 @@ export class DirectorController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
+  findOne(
+    @Param("id", ParseIntPipe, PositiveIntPipe) id: string,
+  ) {
     return this.directorService.findOne(+id);
   }
 
   @Patch(":id")
   update(
-    @Param("id") id: string,
+    @Param("id", ParseIntPipe, PositiveIntPipe) id: string,
     @Body() updateDirectorDto: UpdateDirectorDto,
   ) {
     return this.directorService.update(
@@ -44,7 +48,9 @@ export class DirectorController {
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string) {
+  remove(
+    @Param("id", ParseIntPipe, PositiveIntPipe) id: string,
+  ) {
     return this.directorService.remove(Number(id));
   }
 }

@@ -16,6 +16,7 @@ import { PositiveIntPipe } from "../shared/pipe/positive-int-pipe";
 import { CreateMovieDto } from "./dto/create-movie.dto";
 import { UpdateMovieDto } from "./dto/update-movie.dto";
 import { MovieService } from "./movie.service";
+import { MovieTitleValidationPipe } from "./pipe/movie-title-validation.pipe";
 
 @Controller("movie")
 @UseInterceptors(ClassSerializerInterceptor)
@@ -25,7 +26,10 @@ export class MovieController {
   ) {}
 
   @Get("")
-  getMovies(@Query("title") title?: string) {
+  getMovies(
+    @Query("title", MovieTitleValidationPipe)
+    title?: string,
+  ) {
     return this.movieService.findAll(title);
   }
 
@@ -55,7 +59,7 @@ export class MovieController {
 
   @Patch(":id")
   patchMovie(
-    @Param("id") id: string,
+    @Param("id", ParseIntPipe, PositiveIntPipe) id: string,
     @Body() updateMovieDto: UpdateMovieDto,
   ) {
     return this.movieService.update(
@@ -65,7 +69,9 @@ export class MovieController {
   }
 
   @Delete(":id")
-  deleteMovie(@Param("id") id: string) {
+  deleteMovie(
+    @Param("id", ParseIntPipe, PositiveIntPipe) id: string,
+  ) {
     return this.movieService.remove(Number(id));
   }
 }
