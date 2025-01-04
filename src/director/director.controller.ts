@@ -8,7 +8,7 @@ import {
   Patch,
   Post,
 } from "@nestjs/common";
-import { PositiveIntPipe } from "../shared/pipe/positive-int-pipe";
+import { PositiveIntPipe } from "../shared/pipe/positive-int.pipe";
 import { DirectorService } from "./director.service";
 import { CreateDirectorDto } from "./dto/create-director.dto";
 import { UpdateDirectorDto } from "./dto/update-director.dto";

@@ -12,7 +12,7 @@ import {
   Query,
   UseInterceptors,
 } from "@nestjs/common";
-import { PositiveIntPipe } from "../shared/pipe/positive-int-pipe";
+import { PositiveIntPipe } from "../shared/pipe/positive-int.pipe";
 import { CreateMovieDto } from "./dto/create-movie.dto";
 import { UpdateMovieDto } from "./dto/update-movie.dto";
 import { MovieService } from "./movie.service";

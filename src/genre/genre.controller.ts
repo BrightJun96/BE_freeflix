@@ -10,7 +10,7 @@ import {
   Post,
   UseInterceptors,
 } from "@nestjs/common";
-import { PositiveIntPipe } from "../shared/pipe/positive-int-pipe";
+import { PositiveIntPipe } from "../shared/pipe/positive-int.pipe";
 import { CreateGenreDto } from "./dto/create-genre.dto";
 import { UpdateGenreDto } from "./dto/update-genre.dto";
 import { GenreService } from "./genre.service";
