@@ -3,7 +3,12 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { In, Repository } from "typeorm";
+import {
+  DataSource,
+  In,
+  QueryRunner,
+  Repository,
+} from "typeorm";
 import { Director } from "../director/entities/director.entity";
 import { Genre } from "../genre/entities/genre.entity";
 import { Relations } from "./constant/relations";
@@ -23,6 +28,7 @@ export class MovieService {
     private readonly directorRepository: Repository<Director>,
     @InjectRepository(Genre)
     private readonly genreRepository: Repository<Genre>,
+    private readonly dataSource: DataSource,
   ) {}
 
   // 목록 조회
@@ -102,55 +108,70 @@ export class MovieService {
 
   // 생성
   async create(createMovieDto: CreateMovieDto) {
-    const genres = await this.findGenres(
-      createMovieDto.genreIds,
-    );
+    const qr = this.dataSource.createQueryRunner();
+    await qr.connect();
+    await qr.startTransaction();
 
-    const director = await this.findDirector(
-      createMovieDto.directorId,
-    );
+    try {
+      const genres = await this.findGenres(
+        createMovieDto.genreIds,
+        qr,
+      );
 
-    const movieDetail = await this.movieDetailRepository
-      .createQueryBuilder()
-      .insert()
-      .into(MovieDetail)
-      .values({
-        detail: createMovieDto.detail,
-      })
-      .execute();
+      const director = await this.findDirector(
+        createMovieDto.directorId,
+        qr,
+      );
 
-    const movieDetailId = movieDetail.identifiers[0].id;
+      const movieDetail = await qr.manager
+        .createQueryBuilder()
+        .insert()
+        .into(MovieDetail)
+        .values({
+          detail: createMovieDto.detail,
+        })
+        .execute();
 
-    const movie = await this.movieRepository
-      .createQueryBuilder()
-      .insert()
-      .into(Movie)
-      .values({
-        title: createMovieDto.title,
-        detail: {
-          id: movieDetailId,
-        },
-        director,
-        // genres, ManyToMany 안됨.
-      })
-      .execute();
+      const movieDetailId = movieDetail.identifiers[0].id;
 
-    const movieId = movie.identifiers[0].id;
+      const movie = await qr.manager
+        .createQueryBuilder()
+        .insert()
+        .into(Movie)
+        .values({
+          title: createMovieDto.title,
+          detail: {
+            id: movieDetailId,
+          },
+          director,
+          // genres, ManyToMany 안됨.
+        })
+        .execute();
 
-    await this.movieRepository
-      .createQueryBuilder()
-      .relation(Movie, "genres")
-      .of(movieId)
-      .add(genres.map((genre) => genre.id));
+      const movieId = movie.identifiers[0].id;
 
-    return await this.findOne(movieId);
-    //
-    // return await this.movieRepository.save({
-    //   title: createMovieDto.title,
-    //   detail: { detail: createMovieDto.detail },
-    //   director,
-    //   genres,
-    // });
+      await qr.manager
+        .createQueryBuilder()
+        .relation(Movie, "genres")
+        .of(movieId)
+        .add(genres.map((genre) => genre.id));
+
+      await qr.commitTransaction();
+
+      return await this.findOne(movieId);
+      //
+      // return await this.movieRepository.save({
+      //   title: createMovieDto.title,
+      //   detail: { detail: createMovieDto.detail },
+      //   director,
+      //   genres,
+      // });
+    } catch (e) {
+      await qr.rollbackTransaction();
+      throw e;
+    } finally {
+      await qr.release();
+    }
   }
 
   // 수정
@@ -276,8 +297,10 @@ export class MovieService {
   }
 
   // 장르 찾기
-  async findGenres(genreIds: number[]) {
-    const genres = await this.genreRepository.find({
+  async findGenres(genreIds: number[], qr?: QueryRunner) {
+    this.notFoundQueryRunner(qr);
+
+    const genres = await qr.manager.find(Genre, {
       where: {
         id: In(genreIds),
       },
@@ -294,8 +317,10 @@ export class MovieService {
   }
 
   // 감독 찾기
-  async findDirector(directorId: number) {
-    const director = await this.directorRepository.findOne({
+  async findDirector(directorId: number, qr?: QueryRunner) {
+    this.notFoundQueryRunner(qr);
+
+    const director = await qr.manager.findOne(Director, {
       where: {
         id: directorId,
       },
@@ -308,5 +333,12 @@ export class MovieService {
     }
 
     return director;
+  }
+
+  // QueryRunner Exception
+  notFoundQueryRunner(qr: QueryRunner) {
+    if (!qr) {
+      throw new Error("QueryRunner가 없습니다.");
+    }
   }
 }
