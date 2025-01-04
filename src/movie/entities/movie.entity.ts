@@ -10,7 +10,7 @@ import {
 } from "typeorm";
 import { Director } from "../../director/entities/director.entity";
 import { Genre } from "../../genre/entities/genre.entity";
-import { BaseTable } from "../../shared/base-table";
+import { BaseTable } from "../../shared/entity/base-table";
 import { MovieDetail } from "./movie-detail.entity";
 
 @Entity()

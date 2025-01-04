@@ -5,7 +5,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Movie } from "../../movie/entities/movie.entity";
-import { BaseTable } from "../../shared/base-table";
+import { BaseTable } from "../../shared/entity/base-table";
 
 @Entity()
 export class Genre extends BaseTable {

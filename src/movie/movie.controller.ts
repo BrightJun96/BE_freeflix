@@ -1,15 +1,18 @@
 import {
+  BadRequestException,
   Body,
   ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   Query,
   UseInterceptors,
 } from "@nestjs/common";
+import { PositiveIntPipe } from "../shared/pipe/positive-int-pipe";
 import { CreateMovieDto } from "./dto/create-movie.dto";
 import { UpdateMovieDto } from "./dto/update-movie.dto";
 import { MovieService } from "./movie.service";
@@ -27,8 +30,22 @@ export class MovieController {
   }
 
   @Get(":id")
-  getMovie(@Param("id") id: string) {
-    return this.movieService.findOne(Number(id));
+  getMovie(
+    @Param(
+      "id",
+      new ParseIntPipe({
+        exceptionFactory() {
+          throw new BadRequestException(
+            "숫자만 입력해주세요.",
+          );
+        },
+      }),
+      PositiveIntPipe,
+    )
+    id: number,
+  ) {
+    console.log(typeof id);
+    return this.movieService.findOne(id);
   }
 
   @Post("")
