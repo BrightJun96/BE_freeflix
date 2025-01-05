@@ -87,6 +87,8 @@ export class BearerTokenMiddleware
       req.user = await this.jwtService.verifyAsync(token, {
         secret,
       });
+
+      next();
     } catch (e) {
       throw new UnauthorizedException(
         "토큰이 만료되었습니다.",
