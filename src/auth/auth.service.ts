@@ -3,6 +3,7 @@ import {
   Injectable,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcrypt";
 import { Repository } from "typeorm";
@@ -14,6 +15,7 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly configService: ConfigService,
+    private readonly jwtService: JwtService,
   ) {}
 
   // 토큰 파싱
@@ -29,9 +31,7 @@ export class AuthService {
     const [_, token] = basicSplit;
 
     // @todo 2.토큰을 base64 디코딩하여 email와 password 추출
-    // @question Buffer가 뭐임?
-    // @question base64가 뭐임?
-    // @question utf-8 뭐임?
+
     const decoded = Buffer.from(token, "base64").toString(
       "utf-8",
     );
@@ -87,5 +87,66 @@ export class AuthService {
         email,
       },
     });
+  }
+
+  async login(rawToken: string) {
+    const { email, password } =
+      this.parseBasicToken(rawToken);
+
+    const user = await this.userRepository.findOne({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException(
+        "잘못된 로그인 정보입니다. ",
+      );
+    }
+
+    const passOk = await bcrypt.compare(
+      password,
+      user.password,
+    );
+
+    if (!passOk) {
+      throw new BadRequestException(
+        "잘못된 로그인 정보입니다. ",
+      );
+    }
+
+    const accessTokenSecret =
+      this.configService.get<string>("ACCESS_TOKEN_SECRET");
+
+    const refreshTokenSecret =
+      this.configService.get<string>(
+        "REFRESH_TOKEN_SECRET",
+      );
+
+    return {
+      accessToken: await this.jwtService.signAsync(
+        {
+          sub: user.id,
+          role: user.role,
+          type: "access",
+        },
+        {
+          secret: accessTokenSecret,
+          expiresIn: 300,
+        },
+      ),
+      refreshToken: await this.jwtService.signAsync(
+        {
+          sub: user.id,
+          role: user.role,
+          type: "refresh",
+        },
+        {
+          secret: refreshTokenSecret,
+          expiresIn: "24h",
+        },
+      ),
+    };
   }
 }
