@@ -5,6 +5,7 @@ import {
 } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import * as Joi from "joi";
+import { AuthModule } from "./auth/auth.module";
 import { DirectorModule } from "./director/director.module";
 import { Director } from "./director/entities/director.entity";
 import { Genre } from "./genre/entities/genre.entity";
@@ -12,6 +13,8 @@ import { GenreModule } from "./genre/genre.module";
 import { MovieDetail } from "./movie/entities/movie-detail.entity";
 import { Movie } from "./movie/entities/movie.entity";
 import { MovieModule } from "./movie/movie.module";
+import { User } from "./user/entities/user.entity";
+import { UserModule } from "./user/user.module";
 
 @Module({
   imports: [
@@ -38,7 +41,13 @@ import { MovieModule } from "./movie/movie.module";
         username: configService.get<string>("DB_USERNAME"),
         password: configService.get<string>("DB_PASSWORD"),
         database: configService.get<string>("DB_DATABASE"),
-        entities: [Movie, MovieDetail, Director, Genre],
+        entities: [
+          Movie,
+          MovieDetail,
+          Director,
+          Genre,
+          User,
+        ],
         synchronize: true,
         // logging: true,
       }),
@@ -57,6 +66,8 @@ import { MovieModule } from "./movie/movie.module";
     MovieModule,
     DirectorModule,
     GenreModule,
+    AuthModule,
+    UserModule,
   ],
 })
 export class AppModule {}
