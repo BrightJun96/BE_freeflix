@@ -1,3 +1,4 @@
+import { Exclude } from "class-transformer";
 import {
   Column,
   Entity,
@@ -22,6 +23,9 @@ export class User extends BaseTable {
   email: string;
 
   @Column()
+  @Exclude({
+    toPlainOnly: true, // 응답할 때 제외
+  })
   password: string;
 
   @Column({
