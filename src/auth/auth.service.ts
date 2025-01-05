@@ -7,7 +7,7 @@ import { JwtService } from "@nestjs/jwt";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcrypt";
 import { Repository } from "typeorm";
-import { User } from "../user/entities/user.entity";
+import { Role, User } from "../user/entities/user.entity";
 
 @Injectable()
 export class AuthService {
@@ -20,7 +20,7 @@ export class AuthService {
 
   // 토큰 파싱
   parseBasicToken(rawToken: string) {
-    // @todo 1.토큰을 " "기준으로 스플릿하여 토큰 추출
+    // 토큰을 " "기준으로 스플릿하여 토큰 추출
     const basicSplit = rawToken.split(" ");
 
     if (basicSplit.length !== 2) {
@@ -28,9 +28,15 @@ export class AuthService {
         "토큰 포맷이 잘못되었습니다.",
       );
     }
-    const [_, token] = basicSplit;
+    const [BASIC, token] = basicSplit;
 
-    // @todo 2.토큰을 base64 디코딩하여 email와 password 추출
+    if (BASIC.toLowerCase() !== "basic") {
+      throw new BadRequestException(
+        "토큰 포맷이 잘못되었습니다.",
+      );
+    }
+
+    // 토큰을 base64 디코딩하여 email와 password 추출
 
     const decoded = Buffer.from(token, "base64").toString(
       "utf-8",
@@ -116,7 +122,13 @@ export class AuthService {
     return user;
   }
 
-  async issueToken(user: User, isRefreshToken: boolean) {
+  async issueToken(
+    user: {
+      id: number;
+      role: Role;
+    },
+    isRefreshToken: boolean,
+  ) {
     const accessTokenSecret =
       this.configService.get<string>("ACCESS_TOKEN_SECRET");
 
@@ -149,5 +161,54 @@ export class AuthService {
       accessToken: await this.issueToken(user, false),
       refreshToken: await this.issueToken(user, true),
     };
+  }
+
+  // Bearer Token 파싱
+  async parseBearerToken(
+    rawToken: string,
+    isRefreshToken: boolean,
+  ) {
+    const bearerSplit = rawToken.split(" ");
+
+    if (bearerSplit.length !== 2) {
+      throw new BadRequestException(
+        "토큰 포맷이 잘못되었습니다.",
+      );
+    }
+
+    const [BEARER, token] = bearerSplit;
+
+    if (BEARER.toLowerCase() !== "bearer") {
+      throw new BadRequestException(
+        "토큰 포맷이 잘못되었습니다.",
+      );
+    }
+
+    const payload = await this.jwtService.verifyAsync(
+      token,
+      {
+        secret: this.configService.get<string>(
+          isRefreshToken
+            ? "REFRESH_TOKEN_SECRET"
+            : "ACCESS_TOKEN_SECRET",
+        ),
+      },
+    );
+
+    if (isRefreshToken) {
+      if (payload.type !== "refresh") {
+        throw new BadRequestException(
+          "Refresh 토큰을 입력해주세요.",
+        );
+      }
+    } else {
+      if (payload.type !== "access") {
+        throw new BadRequestException(
+          "Access 토큰을 입력해주세요.",
+        );
+      }
+    }
+
+    return payload;
   }
 }

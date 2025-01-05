@@ -27,6 +27,22 @@ export class AuthController {
     return this.authService.login(token);
   }
 
+  @Post("reissue-accessToken")
+  async rotateAccessToken(
+    @Headers("authorization") refreshToken: string,
+  ) {
+    const payload = await this.authService.parseBearerToken(
+      refreshToken,
+      true,
+    );
+
+    return {
+      accessToken: await this.authService.issueToken(
+        payload,
+        false,
+      ),
+    };
+  }
   @UseGuards(LocalAuthGuard)
   @Post("login/passport")
   // local.strategy.ts 파일의 validate() 메서드에서 반환한 객체가 Request 객체로 전달됨
