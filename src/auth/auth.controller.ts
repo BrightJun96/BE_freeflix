@@ -28,17 +28,14 @@ export class AuthController {
   }
 
   @Post("reissue-accessToken")
-  async rotateAccessToken(
-    @Headers("authorization") refreshToken: string,
-  ) {
-    const payload = await this.authService.parseBearerToken(
-      refreshToken,
-      true,
-    );
+  async rotateAccessToken(@Request() req) {
+    console.log("req.user", req.user);
+
+    this.authService.validateRefreshToken(req.user.type);
 
     return {
       accessToken: await this.authService.issueToken(
-        payload,
+        req.user,
         false,
       ),
     };

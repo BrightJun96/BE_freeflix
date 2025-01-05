@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Injectable,
-  UnauthorizedException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
@@ -169,57 +168,11 @@ export class AuthService {
     };
   }
 
-  // Bearer Token 파싱
-  async parseBearerToken(
-    rawToken: string,
-    isRefreshToken: boolean,
-  ) {
-    const bearerSplit = rawToken.split(" ");
-
-    if (bearerSplit.length !== 2) {
+  // 리프래쉬 토큰 여부 검증(엑세스 토큰 재발급 API에 사용)
+  validateRefreshToken(tokenType: string) {
+    if (tokenType !== "refresh") {
       throw new BadRequestException(
-        "토큰 포맷이 잘못되었습니다.",
-      );
-    }
-
-    const [BEARER, token] = bearerSplit;
-
-    if (BEARER.toLowerCase() !== "bearer") {
-      throw new BadRequestException(
-        "토큰 포맷이 잘못되었습니다.",
-      );
-    }
-
-    try {
-      const payload = await this.jwtService.verifyAsync(
-        token,
-        {
-          secret: this.configService.get<string>(
-            isRefreshToken
-              ? envVariablesKeys.REFRESH_TOKEN_SECRET
-              : envVariablesKeys.ACCESS_TOKEN_SECRET,
-          ),
-        },
-      );
-
-      if (isRefreshToken) {
-        if (payload.type !== "refresh") {
-          throw new BadRequestException(
-            "Refresh 토큰을 입력해주세요.",
-          );
-        }
-      } else {
-        if (payload.type !== "access") {
-          throw new BadRequestException(
-            "Access 토큰을 입력해주세요.",
-          );
-        }
-      }
-
-      return payload;
-    } catch (e) {
-      throw new UnauthorizedException(
-        "토큰이 만료되었습니다.",
+        "리프래쉬 토큰이 아닙니다.",
       );
     }
   }
