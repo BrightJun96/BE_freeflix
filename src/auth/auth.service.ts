@@ -1,12 +1,14 @@
 import {
   BadRequestException,
   Injectable,
+  UnauthorizedException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcrypt";
 import { Repository } from "typeorm";
+import { envVariablesKeys } from "../shared/const/env.const";
 import { Role, User } from "../user/entities/user.entity";
 
 @Injectable()
@@ -79,7 +81,9 @@ export class AuthService {
     // 해싱 암호화
     const hash = await bcrypt.hash(
       password,
-      this.configService.get<number>("HASH_ROUNDS"),
+      this.configService.get<number>(
+        envVariablesKeys.HASH_ROUNDS,
+      ),
     );
 
     // 해싱된 암호로 저장
@@ -130,11 +134,13 @@ export class AuthService {
     isRefreshToken: boolean,
   ) {
     const accessTokenSecret =
-      this.configService.get<string>("ACCESS_TOKEN_SECRET");
+      this.configService.get<string>(
+        envVariablesKeys.ACCESS_TOKEN_SECRET,
+      );
 
     const refreshTokenSecret =
       this.configService.get<string>(
-        "REFRESH_TOKEN_SECRET",
+        envVariablesKeys.REFRESH_TOKEN_SECRET,
       );
     return await this.jwtService.signAsync(
       {
@@ -184,31 +190,37 @@ export class AuthService {
       );
     }
 
-    const payload = await this.jwtService.verifyAsync(
-      token,
-      {
-        secret: this.configService.get<string>(
-          isRefreshToken
-            ? "REFRESH_TOKEN_SECRET"
-            : "ACCESS_TOKEN_SECRET",
-        ),
-      },
-    );
+    try {
+      const payload = await this.jwtService.verifyAsync(
+        token,
+        {
+          secret: this.configService.get<string>(
+            isRefreshToken
+              ? envVariablesKeys.REFRESH_TOKEN_SECRET
+              : envVariablesKeys.ACCESS_TOKEN_SECRET,
+          ),
+        },
+      );
 
-    if (isRefreshToken) {
-      if (payload.type !== "refresh") {
-        throw new BadRequestException(
-          "Refresh 토큰을 입력해주세요.",
-        );
+      if (isRefreshToken) {
+        if (payload.type !== "refresh") {
+          throw new BadRequestException(
+            "Refresh 토큰을 입력해주세요.",
+          );
+        }
+      } else {
+        if (payload.type !== "access") {
+          throw new BadRequestException(
+            "Access 토큰을 입력해주세요.",
+          );
+        }
       }
-    } else {
-      if (payload.type !== "access") {
-        throw new BadRequestException(
-          "Access 토큰을 입력해주세요.",
-        );
-      }
+
+      return payload;
+    } catch (e) {
+      throw new UnauthorizedException(
+        "토큰이 만료되었습니다.",
+      );
     }
-
-    return payload;
   }
 }
