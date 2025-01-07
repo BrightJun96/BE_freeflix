@@ -10,8 +10,11 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
+import { Public } from "../auth/decorator/public.decorator";
+import { AuthGuard } from "../auth/guard/auth.guard";
 import { PositiveIntPipe } from "../shared/pipe/positive-int.pipe";
 import { CreateMovieDto } from "./dto/create-movie.dto";
 import { UpdateMovieDto } from "./dto/update-movie.dto";
@@ -25,7 +28,8 @@ export class MovieController {
     private readonly movieService: MovieService,
   ) {}
 
-  @Get("")
+  @Public()
+  @Get()
   getMovies(
     @Query("title", MovieTitleValidationPipe)
     title?: string,
@@ -33,6 +37,7 @@ export class MovieController {
     return this.movieService.findAll(title);
   }
 
+  @Public()
   @Get(":id")
   getMovie(
     @Param(
@@ -53,6 +58,7 @@ export class MovieController {
   }
 
   @Post("")
+  @UseGuards(AuthGuard)
   postMovie(@Body() createMovieDto: CreateMovieDto) {
     return this.movieService.create(createMovieDto);
   }

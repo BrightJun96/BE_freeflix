@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Injectable,
   NestMiddleware,
-  UnauthorizedException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
@@ -41,16 +40,24 @@ export class BearerTokenMiddleware
 
   // 토큰 타입 검증
   validateTokenType(token: string) {
-    const decodedPayload = this.jwtService.decode(token);
+    try {
+      const decodedPayload = this.jwtService.decode(token);
 
-    if (
-      decodedPayload.type !== "access" &&
-      decodedPayload.type !== "refresh"
-    ) {
-      throw new UnauthorizedException("잘못된 토큰입니다.");
+      if (!decodedPayload) {
+        throw new BadRequestException("잘못된 토큰입니다.");
+      }
+
+      if (
+        decodedPayload.type !== "access" &&
+        decodedPayload.type !== "refresh"
+      ) {
+        throw new BadRequestException("잘못된 토큰입니다.");
+      }
+
+      return decodedPayload.type;
+    } catch (e) {
+      throw e;
     }
-
-    return decodedPayload.type;
   }
 
   // token secret 조회
@@ -71,8 +78,10 @@ export class BearerTokenMiddleware
     res: Response,
     next: NextFunction,
   ) {
+    // 헤더에 값있음?
     const authHeader = req.headers["authorization"];
 
+    // 없으면 다음 미들웨어로
     if (!authHeader) {
       return next();
     }
@@ -84,15 +93,18 @@ export class BearerTokenMiddleware
 
       const secret = this.getTokenSecret(tokenType);
 
+      // 토큰 검증하고 디코딩한 뒤, req.user에 저장
       req.user = await this.jwtService.verifyAsync(token, {
         secret,
       });
 
       next();
     } catch (e) {
-      throw new UnauthorizedException(
-        "토큰이 만료되었습니다.",
-      );
+      throw e;
+      // next();
+      // throw new UnauthorizedException(
+      //   "토큰이 만료되었습니다.",
+      // );
     }
   }
 }

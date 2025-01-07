@@ -8,9 +8,11 @@ import {
   ConfigModule,
   ConfigService,
 } from "@nestjs/config";
+import { APP_GUARD } from "@nestjs/core";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import * as Joi from "joi";
 import { AuthModule } from "./auth/auth.module";
+import { AuthGuard } from "./auth/guard/auth.guard";
 import { BearerTokenMiddleware } from "./auth/middleware/bearer-token.middleware";
 import { DirectorModule } from "./director/director.module";
 import { Director } from "./director/entities/director.entity";
@@ -73,21 +75,17 @@ import { UserModule } from "./user/user.module";
       }),
       inject: [ConfigService],
     }),
-    // TypeOrmModule.forRoot({
-    //   type: process.env.DB_TYPE as "postgres",
-    //   host: process.env.DB_HOST,
-    //   port: parseInt(process.env.DB_PORT),
-    //   username: process.env.DB_USERNAME,
-    //   password: process.env.DB_PASSWORD,
-    //   database: process.env.DB_DATABASE,
-    //   entities: [],
-    //   synchronize: true,
-    // }),
     MovieModule,
     DirectorModule,
     GenreModule,
     AuthModule,
     UserModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
   ],
 })
 export class AppModule implements NestModule {
