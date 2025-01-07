@@ -17,9 +17,9 @@ import { RBAC } from "../auth/decorator/rbac.decorator";
 import { PositiveIntPipe } from "../shared/pipe/positive-int.pipe";
 import { Role } from "../user/entities/user.entity";
 import { CreateMovieDto } from "./dto/create-movie.dto";
+import { GetMovieDto } from "./dto/get-movie.dto";
 import { UpdateMovieDto } from "./dto/update-movie.dto";
 import { MovieService } from "./movie.service";
-import { MovieTitleValidationPipe } from "./pipe/movie-title-validation.pipe";
 
 @Controller("movie")
 @UseInterceptors(ClassSerializerInterceptor)
@@ -31,10 +31,10 @@ export class MovieController {
   @Public()
   @Get()
   getMovies(
-    @Query("title", MovieTitleValidationPipe)
-    title?: string,
+    @Query()
+    getMovieDto: GetMovieDto,
   ) {
-    return this.movieService.findAll(title);
+    return this.movieService.findAll(getMovieDto);
   }
 
   @Public()
@@ -53,7 +53,6 @@ export class MovieController {
     )
     id: number,
   ) {
-    console.log(typeof id);
     return this.movieService.findOne(id);
   }
 

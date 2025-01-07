@@ -72,8 +72,9 @@ import { UserModule } from "./user/user.module";
           User,
         ],
         synchronize: true,
-        // logging: true,
+        logging: true,
       }),
+
       inject: [ConfigService],
     }),
     MovieModule,

@@ -12,8 +12,10 @@ import {
 } from "typeorm";
 import { Director } from "../director/entities/director.entity";
 import { Genre } from "../genre/entities/genre.entity";
+import { SharedService } from "../shared/shared.service";
 import { Relations } from "./constant/relations";
 import { CreateMovieDto } from "./dto/create-movie.dto";
+import { GetMovieDto } from "./dto/get-movie.dto";
 import { UpdateMovieDto } from "./dto/update-movie.dto";
 import { MovieDetail } from "./entities/movie-detail.entity";
 import { Movie } from "./entities/movie.entity";
@@ -30,42 +32,30 @@ export class MovieService {
     @InjectRepository(Genre)
     private readonly genreRepository: Repository<Genre>,
     private readonly dataSource: DataSource,
+    private readonly sharedService: SharedService,
   ) {}
 
   // 목록 조회
-  async findAll(title?: string) {
+  async findAll(getMovieDto: GetMovieDto) {
+    const { title } = getMovieDto;
     const qb = this.movieRepository
       .createQueryBuilder("movie")
       .leftJoinAndSelect("movie.detail", "detail")
       .leftJoinAndSelect("movie.director", "director")
       .leftJoinAndSelect("movie.genres", "genres");
 
+    this.sharedService.applyPagePaginationParamsToQb(
+      qb,
+      getMovieDto,
+    );
+
     if (title) {
-      qb.where("movie.title ILIKE :title", {
+      qb.where(" movie.title ILIKE :title", {
         title: `%${title}%`,
       });
     }
-    return await qb.getManyAndCount();
 
-    // if (!title)
-    //   return await this.movieRepository.find({
-    //     relations: [
-    //       Relations.DETAIL,
-    //       Relations.DIRECTOR,
-    //       Relations.GENRES,
-    //     ],
-    //   });
-    //
-    // return await this.movieRepository.find({
-    //   where: {
-    //     title: ILike(`%${title}%`),
-    //   },
-    //   relations: [
-    //     Relations.DETAIL,
-    //     Relations.DIRECTOR,
-    //     Relations.GENRES,
-    //   ],
-    // });
+    return await qb.getManyAndCount();
   }
 
   // 상세 조회
