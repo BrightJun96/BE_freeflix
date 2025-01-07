@@ -44,7 +44,12 @@ export class MovieService {
       .leftJoinAndSelect("movie.director", "director")
       .leftJoinAndSelect("movie.genres", "genres");
 
-    this.sharedService.applyPagePaginationParamsToQb(
+    // this.sharedService.applyPagePaginationParamsToQb(
+    //   qb,
+    //   getMovieDto,
+    // );
+
+    this.sharedService.applyCursorPaginationParamsToQb<Movie>(
       qb,
       getMovieDto,
     );
