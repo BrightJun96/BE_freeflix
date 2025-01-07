@@ -2,11 +2,16 @@ import {
   BadRequestException,
   Injectable,
   NestMiddleware,
+  UnauthorizedException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { NextFunction } from "express";
 import { envVariablesKeys } from "../../shared/const/env.const";
+
+type ExtendedRequest = Request & {
+  user: {};
+};
 
 @Injectable()
 export class BearerTokenMiddleware
@@ -69,6 +74,19 @@ export class BearerTokenMiddleware
     );
   }
 
+  // 토큰 검증 및 request에 user 저장
+  async verifyToken(token: string, secret: string) {
+    try {
+      return await this.jwtService.verifyAsync(token, {
+        secret,
+      });
+    } catch (e) {
+      throw new UnauthorizedException(
+        "토큰이 만료되었습니다.",
+      );
+    }
+  }
+
   async use(
     req: Request & {
       user: {
@@ -93,10 +111,7 @@ export class BearerTokenMiddleware
 
       const secret = this.getTokenSecret(tokenType);
 
-      // 토큰 검증하고 디코딩한 뒤, req.user에 저장
-      req.user = await this.jwtService.verifyAsync(token, {
-        secret,
-      });
+      req.user = await this.verifyToken(token, secret);
 
       next();
     } catch (e) {

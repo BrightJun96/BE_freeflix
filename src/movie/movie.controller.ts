@@ -10,12 +10,12 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
 import { Public } from "../auth/decorator/public.decorator";
-import { AuthGuard } from "../auth/guard/auth.guard";
+import { RBAC } from "../auth/decorator/rbac.decorator";
 import { PositiveIntPipe } from "../shared/pipe/positive-int.pipe";
+import { Role } from "../user/entities/user.entity";
 import { CreateMovieDto } from "./dto/create-movie.dto";
 import { UpdateMovieDto } from "./dto/update-movie.dto";
 import { MovieService } from "./movie.service";
@@ -57,13 +57,14 @@ export class MovieController {
     return this.movieService.findOne(id);
   }
 
-  @Post("")
-  @UseGuards(AuthGuard)
+  @Post()
+  @RBAC(Role.admin)
   postMovie(@Body() createMovieDto: CreateMovieDto) {
     return this.movieService.create(createMovieDto);
   }
 
   @Patch(":id")
+  @RBAC(Role.admin)
   patchMovie(
     @Param("id", ParseIntPipe, PositiveIntPipe) id: string,
     @Body() updateMovieDto: UpdateMovieDto,
@@ -75,6 +76,7 @@ export class MovieController {
   }
 
   @Delete(":id")
+  // @RBAC(Role.admin)
   deleteMovie(
     @Param("id", ParseIntPipe, PositiveIntPipe) id: string,
   ) {

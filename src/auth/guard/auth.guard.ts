@@ -24,6 +24,7 @@ export class AuthGuard implements CanActivate {
     // 요청에서 req.user 확인
     const request = context.switchToHttp().getRequest();
 
+    console.log("request.user", request.user);
     if (
       !request.user ||
       request.user.type !== AUTH_CONST.ACCESS_TOKEN
