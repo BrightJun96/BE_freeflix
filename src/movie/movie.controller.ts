@@ -14,6 +14,7 @@ import {
 } from "@nestjs/common";
 import { Public } from "../auth/decorator/public.decorator";
 import { RBAC } from "../auth/decorator/rbac.decorator";
+import { CacheInterceptor } from "../shared/interceptor/cache.interceptor";
 import { PositiveIntPipe } from "../shared/pipe/positive-int.pipe";
 import { Role } from "../user/entities/user.entity";
 import { CreateMovieDto } from "./dto/create-movie.dto";
@@ -30,6 +31,7 @@ export class MovieController {
 
   @Public()
   @Get()
+  @UseInterceptors(CacheInterceptor)
   getMovies(
     @Query()
     getMovieDto: GetMovieDto,
