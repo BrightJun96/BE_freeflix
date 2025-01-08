@@ -37,30 +37,79 @@ export class MovieService {
 
   // 목록 조회
   async findAll(getMovieDto: GetMovieDto) {
-    const { title } = getMovieDto;
+    const { title, cursor } = getMovieDto;
     const qb = this.movieRepository
       .createQueryBuilder("movie")
       .leftJoinAndSelect("movie.detail", "detail")
       .leftJoinAndSelect("movie.director", "director")
       .leftJoinAndSelect("movie.genres", "genres");
 
-    // this.sharedService.applyPagePaginationParamsToQb(
-    //   qb,
-    //   getMovieDto,
-    // );
+    if (cursor) {
+      const { values, orders } = JSON.parse(
+        Buffer.from(cursor, "base64").toString("utf-8"),
+      );
 
-    this.sharedService.applyCursorPaginationParamsToQb<Movie>(
-      qb,
-      getMovieDto,
-    );
+      console.log("decodedCursor", values);
 
+      const comparisonOperator = orders.some((order) =>
+        order.endsWith("DESC"),
+      )
+        ? "<"
+        : ">";
+
+      const columns = Object.keys(values);
+
+      const whereConditions = columns
+        .map((key) => `${qb.alias}."${key}"`)
+        .join(",");
+
+      const whereParams = columns
+        .map((v) => `:${v}`)
+        .join(",");
+
+      const query = `(${whereConditions}) ${comparisonOperator} (${whereParams})`;
+      qb.where(query, values);
+
+      getMovieDto.order = orders;
+    }
+    if (getMovieDto.order) {
+      getMovieDto.order.forEach((o, index) => {
+        const [column, direction] = o.split("_");
+
+        if (direction !== "ASC" && direction !== "DESC") {
+          throw new BadRequestException(
+            "Order는 ASC 또는 DESC로 설정해야 합니다.",
+          );
+        }
+
+        if (index === 0) {
+          qb.orderBy(`${qb.alias}.${column}`, direction);
+        } else {
+          qb.addOrderBy(`${qb.alias}.${column}`, direction);
+        }
+      });
+    }
+
+    // qb.orderBy();
     if (title) {
       qb.where(" movie.title ILIKE :title", {
         title: `%${title}%`,
       });
     }
 
-    return await qb.getManyAndCount();
+    const { nextCursor } =
+      await this.sharedService.applyCursorPaginationParamsToQb<Movie>(
+        qb,
+        getMovieDto,
+      );
+
+    const [data, count] = await qb.getManyAndCount();
+
+    return {
+      data,
+      count,
+      nextCursor,
+    };
   }
 
   // 상세 조회

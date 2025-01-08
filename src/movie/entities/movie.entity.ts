@@ -23,6 +23,11 @@ export class Movie extends BaseTable {
   })
   title: string;
 
+  @Column({
+    default: 0,
+  })
+  likeCount: number;
+
   @ManyToMany(() => Genre, (genre) => genre.movies)
   @JoinTable()
   genres: Genre[];
