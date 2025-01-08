@@ -8,7 +8,11 @@ import {
   ConfigModule,
   ConfigService,
 } from "@nestjs/config";
-import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
+import {
+  APP_FILTER,
+  APP_GUARD,
+  APP_INTERCEPTOR,
+} from "@nestjs/core";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import * as Joi from "joi";
 import { AuthModule } from "./auth/auth.module";
@@ -23,6 +27,7 @@ import { MovieDetail } from "./movie/entities/movie-detail.entity";
 import { Movie } from "./movie/entities/movie.entity";
 import { MovieModule } from "./movie/movie.module";
 import { envVariablesKeys } from "./shared/const/env.const";
+import { QueryFailedFilter } from "./shared/filter/query-failed.filter";
 import { ResponseTimeInterceptor } from "./shared/interceptor/response-time.interceptor";
 import { User } from "./user/entities/user.entity";
 import { UserModule } from "./user/user.module";
@@ -96,6 +101,10 @@ import { UserModule } from "./user/user.module";
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseTimeInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: QueryFailedFilter,
     },
   ],
 })
