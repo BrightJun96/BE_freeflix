@@ -170,84 +170,67 @@ export class MovieService {
   }
 
   // 생성
-  async create(createMovieDto: CreateMovieDto) {
-    const qr = this.dataSource.createQueryRunner();
-    await qr.connect();
-    await qr.startTransaction();
+  async create(
+    createMovieDto: CreateMovieDto,
+    qr: QueryRunner,
+  ) {
+    const genres = await this.findGenres(
+      createMovieDto.genreIds,
+      qr,
+    );
 
-    try {
-      const genres = await this.findGenres(
-        createMovieDto.genreIds,
-        qr,
-      );
+    const director = await this.findDirector(
+      createMovieDto.directorId,
+      qr,
+    );
 
-      const director = await this.findDirector(
-        createMovieDto.directorId,
-        qr,
-      );
+    const movieDetail = await qr.manager
+      .createQueryBuilder()
+      .insert()
+      .into(MovieDetail)
+      .values({
+        detail: createMovieDto.detail,
+      })
+      .execute();
 
-      const movieDetail = await qr.manager
-        .createQueryBuilder()
-        .insert()
-        .into(MovieDetail)
-        .values({
-          detail: createMovieDto.detail,
-        })
-        .execute();
+    const movieDetailId = movieDetail.identifiers[0].id;
 
-      const movieDetailId = movieDetail.identifiers[0].id;
-
-      const duplcateMovie =
-        await this.movieRepository.findOne({
-          where: {
-            title: createMovieDto.title,
-          },
-        });
-
-      if (duplcateMovie) {
-        throw new BadRequestException(
-          `이미 존재하는 영화입니다. 영화 제목을 확인해주세요.`,
-        );
-      }
-
-      const movie = await qr.manager
-        .createQueryBuilder()
-        .insert()
-        .into(Movie)
-        .values({
+    const duplicateMovie =
+      await this.movieRepository.findOne({
+        where: {
           title: createMovieDto.title,
-          detail: {
-            id: movieDetailId,
-          },
-          director,
-          // genres, ManyToMany 안됨.
-        })
-        .execute();
+        },
+      });
 
-      const movieId = movie.identifiers[0].id;
-
-      await qr.manager
-        .createQueryBuilder()
-        .relation(Movie, "genres")
-        .of(movieId)
-        .add(genres.map((genre) => genre.id));
-
-      await qr.commitTransaction();
-
-      return await this.findOne(movieId);
-      //
-      // return await this.movieRepository.save({
-      //   title: createMovieDto.title,
-      //   detail: { detail: createMovieDto.detail },
-      //   director,
-      //   genres,
-      // });
-    } catch (e) {
-      await qr.rollbackTransaction();
-      throw e;
-    } finally {
-      await qr.release();
+    if (duplicateMovie) {
+      throw new BadRequestException(
+        `이미 존재하는 영화입니다. 영화 제목을 확인해주세요.`,
+      );
     }
+
+    const movie = await qr.manager
+      .createQueryBuilder()
+      .insert()
+      .into(Movie)
+      .values({
+        title: createMovieDto.title,
+        detail: {
+          id: movieDetailId,
+        },
+        director,
+        // genres, ManyToMany 안됨.
+      })
+      .execute();
+
+    const movieId = movie.identifiers[0].id;
+
+    await qr.manager
+      .createQueryBuilder()
+      .relation(Movie, "genres")
+      .of(movieId)
+      .add(genres.map((genre) => genre.id));
+
+    return await this.findOne(movieId, qr);
   }
 
   // 수정
