@@ -10,13 +10,15 @@ import {
   Patch,
   Post,
   Query,
-  Request,
   UseInterceptors,
 } from "@nestjs/common";
+import { QueryRunner as QR } from "typeorm";
 import { Public } from "../auth/decorator/public.decorator";
 import { RBAC } from "../auth/decorator/rbac.decorator";
+import { QueryRunner } from "../shared/decorator/query-runner.decorator";
 import { TransactionInterceptor } from "../shared/interceptor/transaction.interceptor";
 import { PositiveIntPipe } from "../shared/pipe/positive-int.pipe";
+import { UserId } from "../user/decorator/user-id.decorator";
 import { Role } from "../user/entities/user.entity";
 import { CreateMovieDto } from "./dto/create-movie.dto";
 import { GetMovieDto } from "./dto/get-movie.dto";
@@ -63,11 +65,13 @@ export class MovieController {
   @UseInterceptors(TransactionInterceptor)
   postMovie(
     @Body() createMovieDto: CreateMovieDto,
-    @Request() req,
+    @QueryRunner() qr: QR,
+    @UserId() userId: number,
   ) {
     return this.movieService.create(
       createMovieDto,
-      req.queryRunner,
+      userId,
+      qr,
     );
   }
 

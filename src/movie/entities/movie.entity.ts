@@ -13,6 +13,7 @@ import { Director } from "../../director/entities/director.entity";
 import { Genre } from "../../genre/entities/genre.entity";
 import { DOMAIN_URL } from "../../shared/const/domain.const";
 import { BaseTable } from "../../shared/entity/base-table";
+import { User } from "../../user/entities/user.entity";
 import { MovieDetail } from "./movie-detail.entity";
 
 @Entity()
@@ -54,4 +55,7 @@ export class Movie extends BaseTable {
     nullable: false,
   })
   director: Director;
+
+  @ManyToOne(() => User, (user) => user.createdMovies)
+  creator: User;
 }

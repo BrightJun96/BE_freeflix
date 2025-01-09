@@ -1,10 +1,11 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { rename } from "fs/promises";
+import { rename } from "node:fs/promises";
 
 import { join } from "path";
 import {
@@ -123,6 +124,7 @@ export class MovieService {
         .leftJoinAndSelect("movie.detail", "detail")
         .leftJoinAndSelect("movie.director", "director")
         .leftJoinAndSelect("movie.genres", "genres")
+        .leftJoinAndSelect("movie.creator", "creator")
         .where("movie.id = :id", { id })
         .getOne();
 
@@ -175,6 +177,7 @@ export class MovieService {
   // 생성
   async create(
     createMovieDto: CreateMovieDto,
+    userId: number,
     qr: QueryRunner,
   ) {
     const genres = await this.findGenres(
@@ -228,6 +231,9 @@ export class MovieService {
           createMovieDto.movieFilePath,
         ),
         director,
+        creator: {
+          id: userId,
+        },
       })
       .execute();
 
@@ -244,15 +250,20 @@ export class MovieService {
       tempFolder,
       createMovieDto.movieFilePath,
     );
-
-    await rename(
-      tempFilePath,
-      join(
-        process.cwd(),
-        movieFolder,
-        createMovieDto.movieFilePath,
-      ),
+    const destinationPath = join(
+      process.cwd(),
+      movieFolder,
+      createMovieDto.movieFilePath,
     );
+
+    try {
+      await rename(tempFilePath, destinationPath);
+    } catch (e) {
+      console.log(e);
+      throw new InternalServerErrorException(
+        "동영상 파일 이동 중 오류가 발생했습니다.",
+      );
+    }
     return await this.findOne(movieId, qr);
   }
 
