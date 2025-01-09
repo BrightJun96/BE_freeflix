@@ -17,11 +17,13 @@ import {
 import { Director } from "../director/entities/director.entity";
 import { Genre } from "../genre/entities/genre.entity";
 import { SharedService } from "../shared/shared.service";
+import { UserService } from "../user/user.service";
 import { Relations } from "./constant/relations";
 import { CreateMovieDto } from "./dto/create-movie.dto";
 import { GetMovieDto } from "./dto/get-movie.dto";
 import { UpdateMovieDto } from "./dto/update-movie.dto";
 import { MovieDetail } from "./entities/movie-detail.entity";
+import { MovieUserLike } from "./entities/movie-user-like";
 import { Movie } from "./entities/movie.entity";
 
 @Injectable()
@@ -35,8 +37,11 @@ export class MovieService {
     private readonly directorRepository: Repository<Director>,
     @InjectRepository(Genre)
     private readonly genreRepository: Repository<Genre>,
+    @InjectRepository(MovieUserLike)
+    private readonly movieUserLikeRepository: Repository<MovieUserLike>,
     private readonly dataSource: DataSource,
     private readonly sharedService: SharedService,
+    private readonly userService: UserService,
   ) {}
 
   // 목록 조회
@@ -52,8 +57,6 @@ export class MovieService {
       const { values, orders } = JSON.parse(
         Buffer.from(cursor, "base64").toString("utf-8"),
       );
-
-      console.log("decodedCursor", values);
 
       const comparisonOperator = orders.some((order) =>
         order.endsWith("DESC"),
@@ -472,5 +475,66 @@ export class MovieService {
 
       return director;
     }
+  }
+
+  async likeMovie(movieId: number, userId: number) {
+    return this.likeHandler(movieId, userId, "LIKE");
+  }
+
+  async dislikeMovie(movieId: number, userId: number) {
+    return this.likeHandler(movieId, userId, "DISLIKE");
+  }
+
+  async likeHandler(
+    movieId: number,
+    userId: number,
+    likeStatus: "LIKE" | "DISLIKE",
+  ) {
+    const movie = await this.findOne(movieId);
+    const user = await this.userService.findOne(userId);
+
+    const movieUserLike = await this.movieUserLikeRepository
+      .createQueryBuilder("mul")
+      .where("mul.movieId = :movieId", { movieId })
+      .andWhere("mul.userId = :userId", { userId })
+      .getOne();
+
+    const newLikeStatus = likeStatus === "LIKE";
+    const currentLikeStatus = movieUserLike
+      ? movieUserLike.isLike
+      : null;
+
+    if (currentLikeStatus === null) {
+      // 새로 저장
+      await this.movieUserLikeRepository.save({
+        movie,
+        user,
+        isLike: newLikeStatus,
+      });
+    } else if (currentLikeStatus === newLikeStatus) {
+      // 기존 상태와 같은 경우 삭제
+      await this.movieUserLikeRepository.delete({
+        movie,
+        user,
+      });
+    } else {
+      // 상태가 다를 경우 업데이트
+      await this.movieUserLikeRepository.update(
+        { movie, user },
+        { isLike: newLikeStatus },
+      );
+    }
+
+    const status = await this.movieUserLikeRepository
+      .createQueryBuilder("mul")
+      .where("mul.movieId = :movieId", { movieId })
+      .andWhere("mul.userId = :userId", { userId })
+      .getOne();
+
+    return {
+      [likeStatus === "LIKE" ? "isLike" : "isDislike"]: !(
+        status === null
+      ),
+    };
   }
 }

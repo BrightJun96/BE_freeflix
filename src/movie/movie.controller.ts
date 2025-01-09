@@ -94,4 +94,24 @@ export class MovieController {
   ) {
     return this.movieService.remove(Number(id));
   }
+
+  // 좋아요
+  @Post(":id/like")
+  likeMovie(
+    @Param("id", ParseIntPipe, PositiveIntPipe)
+    movieId: number,
+    @UserId() userId: number,
+  ) {
+    return this.movieService.likeMovie(movieId, userId);
+  }
+
+  // 싫어요
+  @Post(":id/dislike")
+  dislikeMovie(
+    @Param("id", ParseIntPipe, PositiveIntPipe)
+    movieId: number,
+    @UserId() userId: number,
+  ) {
+    return this.movieService.dislikeMovie(movieId, userId);
+  }
 }
