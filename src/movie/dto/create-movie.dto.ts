@@ -25,4 +25,8 @@ export class CreateMovieDto {
   @IsNumber({}, { each: true })
   @Type(() => Number)
   genreIds: number[]; // 장르 ID
+
+  @IsNotEmpty()
+  @IsString()
+  movieFilePath: string; // 동영상 파일 경로
 }

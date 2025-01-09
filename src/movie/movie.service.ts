@@ -4,6 +4,8 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { rename } from "fs/promises";
+
 import { join } from "path";
 import {
   DataSource,
@@ -173,7 +175,6 @@ export class MovieService {
   // 생성
   async create(
     createMovieDto: CreateMovieDto,
-    movieFileName: string,
     qr: QueryRunner,
   ) {
     const genres = await this.findGenres(
@@ -211,6 +212,7 @@ export class MovieService {
     }
 
     const movieFolder = join("public", "movie");
+    const tempFolder = join("public", "temp");
 
     const movie = await qr.manager
       .createQueryBuilder()
@@ -221,7 +223,10 @@ export class MovieService {
         detail: {
           id: movieDetailId,
         },
-        movieFilePath: join(movieFolder, movieFileName),
+        movieFilePath: join(
+          movieFolder,
+          createMovieDto.movieFilePath,
+        ),
         director,
       })
       .execute();
@@ -234,6 +239,20 @@ export class MovieService {
       .of(movieId)
       .add(genres.map((genre) => genre.id));
 
+    const tempFilePath = join(
+      process.cwd(),
+      tempFolder,
+      createMovieDto.movieFilePath,
+    );
+
+    await rename(
+      tempFilePath,
+      join(
+        process.cwd(),
+        movieFolder,
+        createMovieDto.movieFilePath,
+      ),
+    );
     return await this.findOne(movieId, qr);
   }
 
@@ -326,6 +345,7 @@ export class MovieService {
       // await this.movieRepository.save(newMovie);
 
       await qr.commitTransaction();
+
       return this.movieRepository.findOne({
         where: {
           id,

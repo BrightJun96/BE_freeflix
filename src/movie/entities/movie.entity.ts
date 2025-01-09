@@ -1,3 +1,4 @@
+import { Transform } from "class-transformer";
 import {
   Column,
   Entity,
@@ -10,6 +11,7 @@ import {
 } from "typeorm";
 import { Director } from "../../director/entities/director.entity";
 import { Genre } from "../../genre/entities/genre.entity";
+import { DOMAIN_URL } from "../../shared/const/domain.const";
 import { BaseTable } from "../../shared/entity/base-table";
 import { MovieDetail } from "./movie-detail.entity";
 
@@ -44,6 +46,7 @@ export class Movie extends BaseTable {
   detail: MovieDetail;
 
   @Column()
+  @Transform(({ value }) => `${DOMAIN_URL}/${value}`)
   movieFilePath: string;
 
   @ManyToOne(() => Director, (director) => director.id, {

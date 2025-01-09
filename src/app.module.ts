@@ -33,6 +33,7 @@ import { QueryFailedFilter } from "./shared/filter/query-failed.filter";
 import { ResponseTimeInterceptor } from "./shared/interceptor/response-time.interceptor";
 import { User } from "./user/entities/user.entity";
 import { UserModule } from "./user/user.module";
+import { FileUploadModule } from './file-upload/file-upload.module';
 
 @Module({
   imports: [
@@ -94,6 +95,7 @@ import { UserModule } from "./user/user.module";
     GenreModule,
     AuthModule,
     UserModule,
+    FileUploadModule,
   ],
   providers: [
     {
