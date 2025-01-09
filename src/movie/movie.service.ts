@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { join } from "path";
 import {
   DataSource,
   In,
@@ -172,6 +173,7 @@ export class MovieService {
   // 생성
   async create(
     createMovieDto: CreateMovieDto,
+    movieFileName: string,
     qr: QueryRunner,
   ) {
     const genres = await this.findGenres(
@@ -208,6 +210,8 @@ export class MovieService {
       );
     }
 
+    const movieFolder = join("public", "movie");
+
     const movie = await qr.manager
       .createQueryBuilder()
       .insert()
@@ -217,8 +221,8 @@ export class MovieService {
         detail: {
           id: movieDetailId,
         },
+        movieFilePath: join(movieFolder, movieFileName),
         director,
-        // genres, ManyToMany 안됨.
       })
       .execute();
 

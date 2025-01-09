@@ -43,6 +43,9 @@ export class Movie extends BaseTable {
   @JoinColumn()
   detail: MovieDetail;
 
+  @Column()
+  movieFilePath: string;
+
   @ManyToOne(() => Director, (director) => director.id, {
     cascade: true,
     nullable: false,

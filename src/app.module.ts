@@ -13,8 +13,10 @@ import {
   APP_GUARD,
   APP_INTERCEPTOR,
 } from "@nestjs/core";
+import { ServeStaticModule } from "@nestjs/serve-static";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import * as Joi from "joi";
+import { join } from "path";
 import { AuthModule } from "./auth/auth.module";
 import { AuthGuard } from "./auth/guard/auth.guard";
 import { RbacGuard } from "./auth/guard/rbac.guard";
@@ -82,6 +84,10 @@ import { UserModule } from "./user/user.module";
       }),
 
       inject: [ConfigService],
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), "public"),
+      serveRoot: "/public/",
     }),
     MovieModule,
     DirectorModule,
