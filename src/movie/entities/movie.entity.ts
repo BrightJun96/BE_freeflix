@@ -6,6 +6,7 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
@@ -15,6 +16,7 @@ import { DOMAIN_URL } from "../../shared/const/domain.const";
 import { BaseTable } from "../../shared/entity/base-table";
 import { User } from "../../user/entities/user.entity";
 import { MovieDetail } from "./movie-detail.entity";
+import { MovieUserLike } from "./movie-user-like";
 
 @Entity()
 export class Movie extends BaseTable {
@@ -58,4 +60,7 @@ export class Movie extends BaseTable {
 
   @ManyToOne(() => User, (user) => user.createdMovies)
   creator: User;
+
+  @OneToMany(() => MovieUserLike, (mul) => mul.movie)
+  likedMovies: MovieUserLike[];
 }
