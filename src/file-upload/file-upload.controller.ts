@@ -6,16 +6,27 @@ import {
   UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiTags,
+} from "@nestjs/swagger";
 import { MIME_TYPE } from "../movie/constant/mime-type";
 import { FileUploadService } from "./file-upload.service";
 
 @Controller("file-upload")
+@ApiBearerAuth()
+@ApiTags("파일 업로드")
 export class FileUploadController {
   constructor(
     private readonly fileUploadService: FileUploadService,
   ) {}
 
   @Post()
+  @ApiOperation({
+    description:
+      "영화 파일 업로드 API(mp4 파일만 업로드 가능)",
+  })
   @UseInterceptors(
     FileInterceptor("file", {
       limits: {

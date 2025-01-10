@@ -13,6 +13,8 @@ async function bootstrap() {
     .setTitle("freeflix API")
     .setDescription("freeflix API 문서")
     .setVersion("1.0")
+    .addBasicAuth()
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(
@@ -20,7 +22,11 @@ async function bootstrap() {
     config,
   );
 
-  SwaggerModule.setup("doc", app, document);
+  SwaggerModule.setup("doc", app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({

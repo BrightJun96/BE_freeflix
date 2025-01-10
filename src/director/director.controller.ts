@@ -8,12 +8,15 @@ import {
   Patch,
   Post,
 } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { PositiveIntPipe } from "../shared/pipe/positive-int.pipe";
 import { DirectorService } from "./director.service";
 import { CreateDirectorDto } from "./dto/create-director.dto";
 import { UpdateDirectorDto } from "./dto/update-director.dto";
 
 @Controller("director")
+@ApiBearerAuth()
+@ApiTags("감독")
 export class DirectorController {
   constructor(
     private readonly directorService: DirectorService,

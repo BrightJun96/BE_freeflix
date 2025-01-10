@@ -10,6 +10,7 @@ import {
   Post,
   UseInterceptors,
 } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { PositiveIntPipe } from "../shared/pipe/positive-int.pipe";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
@@ -17,6 +18,8 @@ import { UserService } from "./user.service";
 
 @Controller("user")
 @UseInterceptors(ClassSerializerInterceptor)
+@ApiBearerAuth()
+@ApiTags("USER")
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

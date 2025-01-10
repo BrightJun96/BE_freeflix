@@ -12,6 +12,11 @@ import {
   Query,
   UseInterceptors,
 } from "@nestjs/common";
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiTags,
+} from "@nestjs/swagger";
 import { QueryRunner as QR } from "typeorm";
 import { Public } from "../auth/decorator/public.decorator";
 import { RBAC } from "../auth/decorator/rbac.decorator";
@@ -28,6 +33,8 @@ import { MovieService } from "./movie.service";
 
 @Controller("movie")
 @UseInterceptors(ClassSerializerInterceptor)
+@ApiBearerAuth()
+@ApiTags("영화")
 export class MovieController {
   constructor(
     private readonly movieService: MovieService,
@@ -49,6 +56,9 @@ export class MovieController {
 
   @Public()
   @Get("recent")
+  @ApiOperation({
+    description: "최신 영화 조회 API",
+  })
   getRecentMovies() {
     return this.movieService.findLatestMovies();
   }
@@ -109,6 +119,9 @@ export class MovieController {
 
   // 좋아요
   @Post(":id/like")
+  @ApiOperation({
+    description: "좋아요 API",
+  })
   likeMovie(
     @Param("id", ParseIntPipe, PositiveIntPipe)
     movieId: number,
@@ -119,6 +132,9 @@ export class MovieController {
 
   // 싫어요
   @Post(":id/dislike")
+  @ApiOperation({
+    description: "싫어요 API",
+  })
   dislikeMovie(
     @Param("id", ParseIntPipe, PositiveIntPipe)
     movieId: number,
