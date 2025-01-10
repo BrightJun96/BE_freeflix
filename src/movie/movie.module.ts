@@ -1,3 +1,4 @@
+import { CacheModule } from "@nestjs/cache-manager";
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { Director } from "../director/entities/director.entity";
@@ -21,6 +22,9 @@ import { MovieService } from "./movie.service";
     ]),
     SharedModule,
     UserModule,
+    CacheModule.register({
+      ttl: 3000,
+    }),
   ],
   controllers: [MovieController],
   providers: [MovieService],

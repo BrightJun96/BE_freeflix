@@ -43,6 +43,12 @@ export class MovieController {
   }
 
   @Public()
+  @Get("recent")
+  getRecentMovies() {
+    return this.movieService.findLatestMovies();
+  }
+
+  @Public()
   @Get(":id")
   getMovie(
     @Param(

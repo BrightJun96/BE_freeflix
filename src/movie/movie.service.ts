@@ -1,5 +1,10 @@
 import {
+  Cache,
+  CACHE_MANAGER,
+} from "@nestjs/cache-manager";
+import {
   BadRequestException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -42,6 +47,8 @@ export class MovieService {
     private readonly dataSource: DataSource,
     private readonly sharedService: SharedService,
     private readonly userService: UserService,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
   ) {}
 
   // 목록 조회
@@ -182,6 +189,31 @@ export class MovieService {
       count,
       nextCursor,
     };
+  }
+
+  // 최신 영화 목록
+  async findLatestMovies() {
+    const recentMovies =
+      await this.cacheManager.get("RECENT_MOVIES");
+
+    if (recentMovies) {
+      console.log("cache");
+      return recentMovies; // JSON.parse(recentMovies);
+    }
+
+    const movies = await this.movieRepository.find({
+      order: {
+        createdAt: "DESC",
+      },
+      take: 10,
+    });
+
+    await this.cacheManager.set(
+      "RECENT_MOVIES",
+      movies, // JSON.stringify(movies),
+    );
+
+    return movies;
   }
 
   // 상세 조회
