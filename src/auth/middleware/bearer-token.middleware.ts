@@ -1,3 +1,4 @@
+import { Cache } from "@nestjs/cache-manager";
 import {
   BadRequestException,
   Injectable,
@@ -7,11 +8,8 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { NextFunction } from "express";
+import { CACHE_KEY } from "../../shared/const/cache-key.const";
 import { envVariablesKeys } from "../../shared/const/env.const";
-
-type ExtendedRequest = Request & {
-  user: {};
-};
 
 @Injectable()
 export class BearerTokenMiddleware
@@ -20,6 +18,7 @@ export class BearerTokenMiddleware
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly cacheManager: Cache,
   ) {}
 
   // Bearer 토큰 파싱
@@ -74,12 +73,46 @@ export class BearerTokenMiddleware
     );
   }
 
+  // 캐시 토큰 설정
+  async setTokenCache(token: string, tokenInfo: unknown) {
+    // 만료시간
+    const exp = tokenInfo["exp"] * 1000;
+    // 현재시간
+    const now = Date.now();
+    // 만료시간 - 현재시간
+    const differenceInSeconds = (exp - now) / 1000;
+    // 만료시간 - 현재시간 - 30초
+    const TTL = Math.max(
+      (differenceInSeconds - 30) * 1000,
+      1,
+    );
+
+    await this.cacheManager.set(
+      CACHE_KEY.TOKEN(token),
+      tokenInfo,
+      TTL,
+    );
+  }
+
   // 토큰 검증 및 request에 user 저장
   async verifyToken(token: string, secret: string) {
     try {
-      return await this.jwtService.verifyAsync(token, {
-        secret,
-      });
+      const cache = await this.cacheManager.get(
+        CACHE_KEY.TOKEN(token),
+      );
+      if (cache) {
+        return cache;
+      }
+      const tokenInfo = await this.jwtService.verifyAsync(
+        token,
+        {
+          secret,
+        },
+      );
+
+      await this.setTokenCache(token, tokenInfo);
+
+      return tokenInfo;
     } catch (e) {
       throw new UnauthorizedException(
         "토큰이 만료되었습니다.",
@@ -105,6 +138,14 @@ export class BearerTokenMiddleware
     }
 
     const token = this.validateBearerToken(authHeader);
+
+    const blockedToken = await this.cacheManager.get(
+      CACHE_KEY.BLOCKED_TOKEN(token),
+    );
+
+    if (blockedToken) {
+      throw new UnauthorizedException("차단된 토큰입니다.");
+    }
 
     try {
       const tokenType = this.validateTokenType(token);

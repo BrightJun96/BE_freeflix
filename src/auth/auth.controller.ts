@@ -1,4 +1,5 @@
 import {
+  Body,
   ClassSerializerInterceptor,
   Controller,
   Get,
@@ -30,6 +31,14 @@ export class AuthController {
     return this.authService.login(token);
   }
 
+  // 특정 사용자 차단/토큰 블락
+  @Post("token-block")
+  blockToken(@Body("token") token: string) {
+    console.log("token", token);
+    return this.authService.blockToken(token);
+  }
+
+  // 토큰 재발급
   @Post("reissue-accessToken")
   async rotateAccessToken(@Request() req) {
     console.log("req.user", req.user);

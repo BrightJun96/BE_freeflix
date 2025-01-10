@@ -1,3 +1,4 @@
+import { CacheModule } from "@nestjs/cache-manager";
 import {
   MiddlewareConsumer,
   Module,
@@ -23,17 +24,19 @@ import { RbacGuard } from "./auth/guard/rbac.guard";
 import { BearerTokenMiddleware } from "./auth/middleware/bearer-token.middleware";
 import { DirectorModule } from "./director/director.module";
 import { Director } from "./director/entities/director.entity";
+import { FileUploadModule } from "./file-upload/file-upload.module";
 import { Genre } from "./genre/entities/genre.entity";
 import { GenreModule } from "./genre/genre.module";
 import { MovieDetail } from "./movie/entities/movie-detail.entity";
+import { MovieUserLike } from "./movie/entities/movie-user-like";
 import { Movie } from "./movie/entities/movie.entity";
 import { MovieModule } from "./movie/movie.module";
 import { envVariablesKeys } from "./shared/const/env.const";
 import { QueryFailedFilter } from "./shared/filter/query-failed.filter";
 import { ResponseTimeInterceptor } from "./shared/interceptor/response-time.interceptor";
+import { ThrottleInterceptor } from "./shared/interceptor/throttle.interceptor";
 import { User } from "./user/entities/user.entity";
 import { UserModule } from "./user/user.module";
-import { FileUploadModule } from './file-upload/file-upload.module';
 
 @Module({
   imports: [
@@ -76,6 +79,7 @@ import { FileUploadModule } from './file-upload/file-upload.module';
         entities: [
           Movie,
           MovieDetail,
+          MovieUserLike,
           Director,
           Genre,
           User,
@@ -96,6 +100,10 @@ import { FileUploadModule } from './file-upload/file-upload.module';
     AuthModule,
     UserModule,
     FileUploadModule,
+    CacheModule.register({
+      ttl: 0,
+      isGlobal: true,
+    }),
   ],
   providers: [
     {
@@ -113,6 +121,10 @@ import { FileUploadModule } from './file-upload/file-upload.module';
     {
       provide: APP_FILTER,
       useClass: QueryFailedFilter,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ThrottleInterceptor,
     },
   ],
 })

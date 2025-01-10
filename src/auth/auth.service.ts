@@ -1,5 +1,10 @@
 import {
+  Cache,
+  CACHE_MANAGER,
+} from "@nestjs/cache-manager";
+import {
   BadRequestException,
+  Inject,
   Injectable,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -7,6 +12,7 @@ import { JwtService } from "@nestjs/jwt";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcrypt";
 import { Repository } from "typeorm";
+import { CACHE_KEY } from "../shared/const/cache-key.const";
 import { envVariablesKeys } from "../shared/const/env.const";
 import { Role, User } from "../user/entities/user.entity";
 
@@ -17,6 +23,8 @@ export class AuthService {
     private readonly userRepository: Repository<User>,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
   ) {}
 
   // 토큰 파싱
@@ -175,5 +183,27 @@ export class AuthService {
         "리프래쉬 토큰이 아닙니다.",
       );
     }
+  }
+
+  // 토큰 블락
+  async blockToken(token: string) {
+    const decodedPayload = this.jwtService.decode(token);
+
+    // 만료시간
+    const exp = decodedPayload["exp"] * 1000;
+    // 현재시간
+    const now = Date.now();
+    // 만료시간 - 현재시간
+    const differenceInSeconds = (exp - now) / 1000;
+    // 만료시간 - 현재시간 - 30초
+    const TTL = Math.max(differenceInSeconds * 1000, 1);
+
+    await this.cacheManager.set(
+      CACHE_KEY.BLOCKED_TOKEN(token),
+      decodedPayload,
+      TTL,
+    );
+
+    return true;
   }
 }

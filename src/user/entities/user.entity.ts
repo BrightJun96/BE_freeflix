@@ -5,6 +5,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
+import { MovieUserLike } from "../../movie/entities/movie-user-like";
 import { Movie } from "../../movie/entities/movie.entity";
 import { BaseTable } from "../../shared/entity/base-table";
 
@@ -38,4 +39,7 @@ export class User extends BaseTable {
 
   @OneToMany(() => Movie, (movie) => movie.creator)
   createdMovies: Movie[];
+
+  @OneToMany(() => MovieUserLike, (mul) => mul.user)
+  likedUsers: MovieUserLike[];
 }
