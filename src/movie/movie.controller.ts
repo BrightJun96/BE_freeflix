@@ -16,6 +16,7 @@ import { QueryRunner as QR } from "typeorm";
 import { Public } from "../auth/decorator/public.decorator";
 import { RBAC } from "../auth/decorator/rbac.decorator";
 import { QueryRunner } from "../shared/decorator/query-runner.decorator";
+import { Throttle } from "../shared/decorator/throttle.decorator";
 import { TransactionInterceptor } from "../shared/interceptor/transaction.interceptor";
 import { PositiveIntPipe } from "../shared/pipe/positive-int.pipe";
 import { UserId } from "../user/decorator/user-id.decorator";
@@ -34,6 +35,10 @@ export class MovieController {
 
   @Public()
   @Get()
+  @Throttle({
+    count: 5,
+    unit: "minute",
+  })
   getMovies(
     @Query()
     getMovieDto: GetMovieDto,

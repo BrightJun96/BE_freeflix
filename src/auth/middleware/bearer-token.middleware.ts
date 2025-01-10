@@ -11,10 +11,6 @@ import { NextFunction } from "express";
 import { CACHE_KEY } from "../../shared/const/cache-key.const";
 import { envVariablesKeys } from "../../shared/const/env.const";
 
-type ExtendedRequest = Request & {
-  user: {};
-};
-
 @Injectable()
 export class BearerTokenMiddleware
   implements NestMiddleware
@@ -86,7 +82,10 @@ export class BearerTokenMiddleware
     // 만료시간 - 현재시간
     const differenceInSeconds = (exp - now) / 1000;
     // 만료시간 - 현재시간 - 30초
-    const TTL = (differenceInSeconds - 30) * 1000;
+    const TTL = Math.max(
+      (differenceInSeconds - 30) * 1000,
+      1,
+    );
 
     await this.cacheManager.set(
       CACHE_KEY.TOKEN(token),
@@ -139,6 +138,14 @@ export class BearerTokenMiddleware
     }
 
     const token = this.validateBearerToken(authHeader);
+
+    const blockedToken = await this.cacheManager.get(
+      CACHE_KEY.BLOCKED_TOKEN(token),
+    );
+
+    if (blockedToken) {
+      throw new UnauthorizedException("차단된 토큰입니다.");
+    }
 
     try {
       const tokenType = this.validateTokenType(token);

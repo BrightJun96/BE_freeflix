@@ -34,6 +34,7 @@ import { MovieModule } from "./movie/movie.module";
 import { envVariablesKeys } from "./shared/const/env.const";
 import { QueryFailedFilter } from "./shared/filter/query-failed.filter";
 import { ResponseTimeInterceptor } from "./shared/interceptor/response-time.interceptor";
+import { ThrottleInterceptor } from "./shared/interceptor/throttle.interceptor";
 import { User } from "./user/entities/user.entity";
 import { UserModule } from "./user/user.module";
 
@@ -120,6 +121,10 @@ import { UserModule } from "./user/user.module";
     {
       provide: APP_FILTER,
       useClass: QueryFailedFilter,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ThrottleInterceptor,
     },
   ],
 })
