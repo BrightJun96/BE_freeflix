@@ -21,6 +21,7 @@ import {
 } from "typeorm";
 import { Director } from "../director/entities/director.entity";
 import { Genre } from "../genre/entities/genre.entity";
+import { CACHE_KEY } from "../shared/const/cache-key.const";
 import { SharedService } from "../shared/shared.service";
 import { UserService } from "../user/user.service";
 import { Relations } from "./constant/relations";
@@ -193,11 +194,11 @@ export class MovieService {
 
   // 최신 영화 목록
   async findLatestMovies() {
-    const recentMovies =
-      await this.cacheManager.get("RECENT_MOVIES");
+    const recentMovies = await this.cacheManager.get(
+      CACHE_KEY.RECENT_MOVIES,
+    );
 
     if (recentMovies) {
-      console.log("cache");
       return recentMovies; // JSON.parse(recentMovies);
     }
 
@@ -209,7 +210,7 @@ export class MovieService {
     });
 
     await this.cacheManager.set(
-      "RECENT_MOVIES",
+      CACHE_KEY.RECENT_MOVIES,
       movies, // JSON.stringify(movies),
     );
 

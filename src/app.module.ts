@@ -1,3 +1,4 @@
+import { CacheModule } from "@nestjs/cache-manager";
 import {
   MiddlewareConsumer,
   Module,
@@ -98,6 +99,10 @@ import { UserModule } from "./user/user.module";
     AuthModule,
     UserModule,
     FileUploadModule,
+    CacheModule.register({
+      ttl: 0,
+      isGlobal: true,
+    }),
   ],
   providers: [
     {
