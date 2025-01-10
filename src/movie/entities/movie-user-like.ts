@@ -11,11 +11,15 @@ import { Movie } from "./movie.entity";
 @Entity()
 export class MovieUserLike {
   @PrimaryColumn({ name: "movieId", type: "int8" })
-  @ManyToOne(() => Movie, (movie) => movie.likedMovies)
+  @ManyToOne(() => Movie, (movie) => movie.likedMovies, {
+    onDelete: "CASCADE",
+  })
   movie: Movie;
 
   @PrimaryColumn({ name: "userId", type: "int8" })
-  @ManyToOne(() => User, (user) => user.likedUsers)
+  @ManyToOne(() => User, (user) => user.likedUsers, {
+    onDelete: "CASCADE",
+  })
   user: User;
 
   @Column()

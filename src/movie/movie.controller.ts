@@ -37,8 +37,9 @@ export class MovieController {
   getMovies(
     @Query()
     getMovieDto: GetMovieDto,
+    @UserId() userId?: number,
   ) {
-    return this.movieService.findAll(getMovieDto);
+    return this.movieService.findAll(getMovieDto, userId);
   }
 
   @Public()

@@ -45,7 +45,7 @@ export class MovieService {
   ) {}
 
   // 목록 조회
-  async findAll(getMovieDto: GetMovieDto) {
+  async findAll(getMovieDto: GetMovieDto, userId?: number) {
     const { title, cursor } = getMovieDto;
     const qb = this.movieRepository
       .createQueryBuilder("movie")
@@ -110,7 +110,72 @@ export class MovieService {
         getMovieDto,
       );
 
-    const [data, count] = await qb.getManyAndCount();
+    let [data, count] = await qb.getManyAndCount();
+
+    const movieIds = data.map((movie) => movie.id);
+    // data에서 movieId만 뽑아서 배열[movieIds]로 만들기
+    // 중간 테이블에서 movieIds 중 userId 있는 데이터 추출
+    if (userId) {
+      const likedMovies =
+        movieIds.length > 0
+          ? await this.movieUserLikeRepository
+              .createQueryBuilder("mul")
+              .leftJoinAndSelect("mul.movie", "movie")
+              .leftJoinAndSelect("mul.user", "user")
+              .where("movie.id IN (:...movieIds)", {
+                movieIds,
+              })
+              .andWhere("user.id = :userId", { userId })
+              .getMany()
+          : [];
+
+      // 해당 유저에 좋아요/싫어요 값이 있는 데아터에서 movieId랑 isLike만 추출
+
+      /**
+       * 코팩 센세 로직
+       */
+      const likeMoviesMap = likedMovies.reduce(
+        (acc, cur) => ({
+          ...acc,
+          [cur.movie.id]: cur.isLike,
+        }),
+        {},
+      );
+
+      data = data.map((d) => ({
+        ...d,
+        likeStatus:
+          d.id in likeMoviesMap
+            ? likeMoviesMap[d.id]
+            : null,
+      }));
+
+      /**
+       * 내가 짠 로직
+       */
+      // const extractNeedData = likedMovies.map(
+      //   (likedMovie) => ({
+      //     movieId: likedMovie.movie.id,
+      //     isLike: likedMovie.isLike,
+      //   }),
+      // );
+      //
+      // data = data.map((d) => ({
+      //   ...d,
+      //   isLike: extractNeedData.some(
+      //     (e) => e.movieId === d.id,
+      //   )
+      //     ? extractNeedData.find((e) => e.movieId === d.id)
+      //         .isLike
+      //     : null,
+      // }));
+
+      return {
+        data,
+        count,
+        nextCursor,
+      };
+    }
 
     return {
       data,
