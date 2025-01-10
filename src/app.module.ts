@@ -14,6 +14,7 @@ import {
   APP_GUARD,
   APP_INTERCEPTOR,
 } from "@nestjs/core";
+import { ScheduleModule } from "@nestjs/schedule";
 import { ServeStaticModule } from "@nestjs/serve-static";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import * as Joi from "joi";
@@ -40,6 +41,7 @@ import { UserModule } from "./user/user.module";
 
 @Module({
   imports: [
+    // 환경변수 설정
     ConfigModule.forRoot({
       // 어떤 파일에서든 process.env로 접근 가능토록 하는 설정
       isGlobal: true,
@@ -56,6 +58,7 @@ import { UserModule } from "./user/user.module";
         REFRESH_TOKEN_SECRET: Joi.string().required(),
       }),
     }),
+    // TypeORM 설정
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         type: configService.get<string>(
@@ -104,6 +107,7 @@ import { UserModule } from "./user/user.module";
       ttl: 0,
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
   ],
   providers: [
     {
