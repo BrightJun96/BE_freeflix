@@ -10,6 +10,7 @@ import {
   Post,
   UseInterceptors,
 } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { PositiveIntPipe } from "../shared/pipe/positive-int.pipe";
 import { CreateGenreDto } from "./dto/create-genre.dto";
 import { UpdateGenreDto } from "./dto/update-genre.dto";
@@ -17,6 +18,8 @@ import { GenreService } from "./genre.service";
 
 @Controller("genre")
 @UseInterceptors(ClassSerializerInterceptor)
+@ApiBearerAuth()
+@ApiTags("장르")
 export class GenreController {
   constructor(
     private readonly genreService: GenreService,

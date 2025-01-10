@@ -1,3 +1,4 @@
+import { ApiHideProperty } from "@nestjs/swagger";
 import { Exclude } from "class-transformer";
 import { CreateDateColumn, VersionColumn } from "typeorm";
 
@@ -5,13 +6,16 @@ import { CreateDateColumn, VersionColumn } from "typeorm";
 export class BaseTable {
   @CreateDateColumn()
   @Exclude()
+  @ApiHideProperty()
   createdAt: Date;
 
   @CreateDateColumn()
   @Exclude()
+  @ApiHideProperty()
   updatedAt: Date;
 
   @VersionColumn()
   @Exclude()
+  @ApiHideProperty()
   version: number;
 }
