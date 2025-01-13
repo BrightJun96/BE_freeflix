@@ -32,7 +32,6 @@ describe("UserService", () => {
       await Test.createTestingModule({
         providers: [
           UserService,
-          ConfigService,
           {
             provide: getRepositoryToken(User),
             useValue: mockUserRepository,
