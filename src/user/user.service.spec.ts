@@ -337,6 +337,10 @@ describe("UserService", () => {
           id: userId,
         },
       });
+
+      expect(
+        mockUserRepository.update,
+      ).not.toHaveBeenCalledWith();
     });
   });
 
