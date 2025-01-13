@@ -46,7 +46,7 @@ export class AuthController {
   })
   blockToken(@Body("token") token: string) {
     console.log("token", token);
-    return this.authService.blockToken(token);
+    return this.authService.tokenBlock(token);
   }
 
   // 토큰 재발급

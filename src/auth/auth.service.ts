@@ -29,6 +29,28 @@ export class AuthService {
     private readonly userService: UserService,
   ) {}
 
+  // 토큰 블락
+  async tokenBlock(token: string) {
+    const decodedPayload = this.jwtService.decode(token);
+
+    // 만료시간
+    const exp = decodedPayload["exp"] * 1000;
+    // 현재시간
+    const now = Date.now();
+    // 만료시간 - 현재시간
+    const differenceInSeconds = (exp - now) / 1000;
+    // 만료시간 - 현재시간 - 30초
+    const TTL = Math.max(differenceInSeconds * 1000, 1);
+
+    await this.cacheManager.set(
+      CACHE_KEY.BLOCKED_TOKEN(token),
+      decodedPayload,
+      TTL,
+    );
+
+    return true;
+  }
+
   // 토큰 파싱
   parseBasicToken(rawToken: string) {
     // 토큰을 " "기준으로 스플릿하여 토큰 추출
@@ -158,27 +180,5 @@ export class AuthService {
         "리프래쉬 토큰이 아닙니다.",
       );
     }
-  }
-
-  // 토큰 블락
-  async blockToken(token: string) {
-    const decodedPayload = this.jwtService.decode(token);
-
-    // 만료시간
-    const exp = decodedPayload["exp"] * 1000;
-    // 현재시간
-    const now = Date.now();
-    // 만료시간 - 현재시간
-    const differenceInSeconds = (exp - now) / 1000;
-    // 만료시간 - 현재시간 - 30초
-    const TTL = Math.max(differenceInSeconds * 1000, 1);
-
-    await this.cacheManager.set(
-      CACHE_KEY.BLOCKED_TOKEN(token),
-      decodedPayload,
-      TTL,
-    );
-
-    return true;
   }
 }
