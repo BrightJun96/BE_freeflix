@@ -15,6 +15,7 @@ import { Repository } from "typeorm";
 import { CACHE_KEY } from "../shared/const/cache-key.const";
 import { envVariablesKeys } from "../shared/const/env.const";
 import { Role, User } from "../user/entities/user.entity";
+import { UserService } from "../user/user.service";
 
 @Injectable()
 export class AuthService {
@@ -25,6 +26,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
+    private readonly userService: UserService,
   ) {}
 
   // 토큰 파싱
@@ -73,36 +75,9 @@ export class AuthService {
     const { email, password } =
       this.parseBasicToken(rawToken);
 
-    const user = await this.userRepository.findOne({
-      where: {
-        email,
-      },
-    });
-
-    if (user) {
-      throw new BadRequestException(
-        "이미 존재하는 이메일입니다.",
-      );
-    }
-
-    // 해싱 암호화
-    const hash = await bcrypt.hash(
-      password,
-      this.configService.get<number>(
-        envVariablesKeys.HASH_ROUNDS,
-      ),
-    );
-
-    // 해싱된 암호로 저장
-    await this.userRepository.save({
+    return await this.userService.create({
       email,
-      password: hash,
-    });
-
-    return await this.userRepository.findOne({
-      where: {
-        email,
-      },
+      password,
     });
   }
 

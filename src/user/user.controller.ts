@@ -35,14 +35,14 @@ export class UserController {
 
   @Get(":id")
   findOne(
-    @Param("id", ParseIntPipe, PositiveIntPipe) id: string,
+    @Param("id", ParseIntPipe, PositiveIntPipe) id: number,
   ) {
     return this.userService.findOne(+id);
   }
 
   @Patch(":id")
   update(
-    @Param("id", ParseIntPipe, PositiveIntPipe) id: string,
+    @Param("id", ParseIntPipe, PositiveIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.userService.update(+id, updateUserDto);
@@ -50,7 +50,7 @@ export class UserController {
 
   @Delete(":id")
   remove(
-    @Param("id", ParseIntPipe, PositiveIntPipe) id: string,
+    @Param("id", ParseIntPipe, PositiveIntPipe) id: number,
   ) {
     return this.userService.remove(+id);
   }
