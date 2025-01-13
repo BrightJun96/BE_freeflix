@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -28,12 +25,6 @@ export class UserService {
         id,
       },
     });
-
-    if (!user) {
-      throw new NotFoundException(
-        "존재하지 않는 사용자입니다.",
-      );
-    }
 
     return user;
   }
