@@ -87,6 +87,12 @@ importers:
         specifier: ^11.0.4
         version: 11.0.4
     devDependencies:
+      '@automock/adapters.nestjs':
+        specifier: ^2.1.0
+        version: 2.1.0
+      '@automock/jest':
+        specifier: ^2.1.0
+        version: 2.1.0(jest@29.7.0(@types/node@20.17.10)(ts-node@10.9.2(@types/node@20.17.10)(typescript@5.7.2)))
       '@nestjs/cli':
         specifier: ^10.0.0
         version: 10.4.9
@@ -183,6 +189,27 @@ packages:
   '@angular-devkit/schematics@17.3.11':
     resolution: {integrity: sha512-I5wviiIqiFwar9Pdk30Lujk8FczEEc18i22A5c6Z9lbmhPQdTroDnEQdsfXjy404wPe8H62s0I15o4pmMGfTYQ==}
     engines: {node: ^18.13.0 || >=20.9.0, npm: ^6.11.0 || ^7.5.6 || >=8.0.0, yarn: '>= 1.13.0'}
+
+  '@automock/adapters.nestjs@2.1.0':
+    resolution: {integrity: sha512-cwolpTMF+frIm6idLC/zD0obgG/Wf5wP6I8FKJBcRy+Cuc9Pyy/E7200zafYlOVzUlZUP16VqchgGWpUyb1U3Q==}
+    engines: {node: ^16.10.0 || ^18.12.0 || >=20.0.0}
+
+  '@automock/common@3.1.0':
+    resolution: {integrity: sha512-Y7N4YnSZRuSIfGV4/PdG2JyURa9PK1maqGZBYUG2/sIW+H/Mlhc/3NpegnlUyQFRBexEJtgmUsvfzzI1/lm0JA==}
+    engines: {node: ^16.10.0 || ^18.12.0 || >=20.0.0}
+
+  '@automock/core@2.1.0':
+    resolution: {integrity: sha512-VIaY2woE7nWXhXKlNzk4+xzCuaVBXfGYwowrzdI+MmJBKqi2z0lUjNVix74hZRWhJpkOW+PR3UThFvThgyqIqQ==}
+    engines: {node: ^16.10.0 || ^18.12.0 || >=20.0.0}
+
+  '@automock/jest@2.1.0':
+    resolution: {integrity: sha512-kJuTu/a5bbG8SICIfITgESpIrVbBfbMykDdICmPvJkeI51Ldq+tqiLS2Ded16vLWS9WeFKeTw/+2b/DO8QyV0Q==}
+    engines: {node: ^16.10.0 || ^18.12.0 || >=20.0.0}
+    peerDependencies:
+      jest: ^26 || ^27 || ^28 || ^29
+
+  '@automock/types@2.0.1':
+    resolution: {integrity: sha512-ue35e4im3n7l+Eqq3kCA2nNs8jzJbjYLni+vlPdgJ+9KfsEykJjA1OpnNN/PG1tDaM0iyR2p/uZg27MOC/qiTg==}
 
   '@babel/code-frame@7.26.2':
     resolution: {integrity: sha512-RJlIHRueQgwWitWgF8OdFYGZX328Ax5BCemNGlqHfplnRT9ESi8JkFlvaVYbS+UubVY6dpv87Fs2u5M29iNFVQ==}
@@ -2219,6 +2246,9 @@ packages:
   lodash.isboolean@3.0.3:
     resolution: {integrity: sha512-Bz5mupy2SVbPHURB98VAcw+aHh4vRV5IPNhILUCsOzRmsTmSQ17jIuqopAentWoehktxGd9e/hbIXq980/1QJg==}
 
+  lodash.isequal@4.5.0:
+    resolution: {integrity: sha512-pDo3lu8Jhfjqls6GkMgpahsF9kCyayhgykjyLMNFTKWrpVdAQtYyB4muAMWozBB4ig/dtWAmsMxLEI8wuz+DYQ==}
+
   lodash.isinteger@4.0.4:
     resolution: {integrity: sha512-DBwtEWN2caHQ9/imiNeEA5ys1JoRtRfY3d7V9wkqtbycnAmTvRRmbHKDV4a0EYc678/dia0jrte4tjYwVBaZUA==}
 
@@ -2714,6 +2744,9 @@ packages:
   readdirp@3.6.0:
     resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
     engines: {node: '>=8.10.0'}
+
+  reflect-metadata@0.1.14:
+    resolution: {integrity: sha512-ZhYeb6nRaXCfhnndflDK8qI6ZQ/YcWZCISRAWICW9XYqMUwjZM9Z0DveWX/ABN01oxSHwVxKQmxeYZSsm0jh5A==}
 
   reflect-metadata@0.2.2:
     resolution: {integrity: sha512-urBwgfrvVP/eAyXx4hluJivBKzuEbSQs9rKWCrCkbSxNv8mxPcUZKeuoF3Uy4mJl3Lwprp6yy5/39VWigZ4K6Q==}
@@ -3388,6 +3421,30 @@ snapshots:
       rxjs: 7.8.1
     transitivePeerDependencies:
       - chokidar
+
+  '@automock/adapters.nestjs@2.1.0':
+    dependencies:
+      '@automock/common': 3.1.0
+      '@automock/types': 2.0.1
+      reflect-metadata: 0.1.14
+
+  '@automock/common@3.1.0':
+    dependencies:
+      '@automock/types': 2.0.1
+
+  '@automock/core@2.1.0':
+    dependencies:
+      '@automock/common': 3.1.0
+      '@automock/types': 2.0.1
+      lodash.isequal: 4.5.0
+
+  '@automock/jest@2.1.0(jest@29.7.0(@types/node@20.17.10)(ts-node@10.9.2(@types/node@20.17.10)(typescript@5.7.2)))':
+    dependencies:
+      '@automock/core': 2.1.0
+      '@automock/types': 2.0.1
+      jest: 29.7.0(@types/node@20.17.10)(ts-node@10.9.2(@types/node@20.17.10)(typescript@5.7.2))
+
+  '@automock/types@2.0.1': {}
 
   '@babel/code-frame@7.26.2':
     dependencies:
@@ -5944,6 +6001,8 @@ snapshots:
 
   lodash.isboolean@3.0.3: {}
 
+  lodash.isequal@4.5.0: {}
+
   lodash.isinteger@4.0.4: {}
 
   lodash.isnumber@3.0.3: {}
@@ -6377,6 +6436,8 @@ snapshots:
   readdirp@3.6.0:
     dependencies:
       picomatch: 2.3.1
+
+  reflect-metadata@0.1.14: {}
 
   reflect-metadata@0.2.2: {}
 
