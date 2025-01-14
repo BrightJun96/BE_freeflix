@@ -34,26 +34,26 @@ export class DirectorController {
 
   @Get(":id")
   findOne(
-    @Param("id", ParseIntPipe, PositiveIntPipe) id: string,
+    @Param("id", ParseIntPipe, PositiveIntPipe) id: number,
   ) {
-    return this.directorService.findOne(+id);
+    return this.directorService.findOne(id);
   }
 
   @Patch(":id")
   update(
-    @Param("id", ParseIntPipe, PositiveIntPipe) id: string,
+    @Param("id", ParseIntPipe, PositiveIntPipe) id: number,
     @Body() updateDirectorDto: UpdateDirectorDto,
   ) {
     return this.directorService.update(
-      Number(id),
+      id,
       updateDirectorDto,
     );
   }
 
   @Delete(":id")
   remove(
-    @Param("id", ParseIntPipe, PositiveIntPipe) id: string,
+    @Param("id", ParseIntPipe, PositiveIntPipe) id: number,
   ) {
-    return this.directorService.remove(Number(id));
+    return this.directorService.remove(id);
   }
 }

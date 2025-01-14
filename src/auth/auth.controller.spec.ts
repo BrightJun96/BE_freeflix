@@ -107,8 +107,6 @@ describe("AuthController", () => {
   });
 
   describe("rotateAccessToken", () => {
-    beforeEach(() => {});
-
     it("should issue accessToken through refreshToken if accessToken expires or no exists", async () => {
       const user = {
         id: 1,
