@@ -36,8 +36,12 @@ describe("UserController", () => {
     userService = module.get<UserService>(UserService);
   });
 
+  /**
+   * 이거 왜 하는거지? => userController 정의 확인
+   */
   it("should be defined", () => {
     expect(userController).toBeDefined();
+    expect(userService).toBeDefined();
   });
 
   /**
