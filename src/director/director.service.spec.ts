@@ -234,7 +234,11 @@ describe("DirectorService", () => {
 
       expect(
         directorRepository.findOne,
-      ).toHaveBeenCalledWith(directorId);
+      ).toHaveBeenCalledWith({
+        where: {
+          id: directorId,
+        },
+      });
 
       expect(
         directorRepository.delete,
