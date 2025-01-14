@@ -29,7 +29,7 @@ import { CreateMovieDto } from "./dto/create-movie.dto";
 import { GetMovieDto } from "./dto/get-movie.dto";
 import { UpdateMovieDto } from "./dto/update-movie.dto";
 import { MovieDetail } from "./entities/movie-detail.entity";
-import { MovieUserLike } from "./entities/movie-user-like";
+import { MovieUserLike } from "./entities/movie-user.like";
 import { Movie } from "./entities/movie.entity";
 
 @Injectable()
@@ -52,14 +52,59 @@ export class MovieService {
     private readonly cacheManager: Cache,
   ) {}
 
-  // 목록 조회
-  async findAll(getMovieDto: GetMovieDto, userId?: number) {
-    const { title, cursor } = getMovieDto;
-    const qb = this.movieRepository
+  // 최신 영화 목록
+  async findLatestMovies() {
+    const recentMovies = await this.cacheManager.get(
+      CACHE_KEY.RECENT_MOVIES,
+    );
+
+    if (recentMovies) {
+      return recentMovies; // JSON.parse(recentMovies);
+    }
+
+    const movies = await this.movieRepository.find({
+      order: {
+        createdAt: "DESC",
+      },
+      take: 10,
+    });
+
+    await this.cacheManager.set(
+      CACHE_KEY.RECENT_MOVIES,
+      movies, // JSON.stringify(movies),
+    );
+
+    return movies;
+  }
+
+  // 단순 영화 조회 => 테스트 커버리지 제외 => 단순 레포지터리 조회기 때문에 테스트하지 않아도됨.
+  /* istanbul ignore next */
+  async getMovies() {
+    return this.movieRepository
       .createQueryBuilder("movie")
       .leftJoinAndSelect("movie.detail", "detail")
       .leftJoinAndSelect("movie.director", "director")
       .leftJoinAndSelect("movie.genres", "genres");
+  }
+
+  // 좋아요한 영화 조회 => 테스트 커버리지 제외
+  /* istanbul ignore next */
+  async getLikedMovies(movieIds: number[], userId: number) {
+    return this.movieUserLikeRepository
+      .createQueryBuilder("mul")
+      .leftJoinAndSelect("mul.movie", "movie")
+      .leftJoinAndSelect("mul.user", "user")
+      .where("movie.id IN (:...movieIds)", {
+        movieIds,
+      })
+      .andWhere("user.id = :userId", { userId })
+      .getMany();
+  }
+
+  // 목록 조회(페이지네이션 및 검색)
+  async findAll(getMovieDto: GetMovieDto, userId?: number) {
+    const { title, cursor } = getMovieDto;
+    const qb = await this.getMovies();
 
     if (cursor) {
       const { values, orders } = JSON.parse(
@@ -83,6 +128,7 @@ export class MovieService {
         .join(",");
 
       const query = `(${whereConditions}) ${comparisonOperator} (${whereParams})`;
+
       qb.where(query, values);
 
       getMovieDto.order = orders;
@@ -107,7 +153,7 @@ export class MovieService {
 
     // qb.orderBy();
     if (title) {
-      qb.where(" movie.title ILIKE :title", {
+      qb.where("movie.title ILIKE :title", {
         title: `%${title}%`,
       });
     }
@@ -120,21 +166,14 @@ export class MovieService {
 
     let [data, count] = await qb.getManyAndCount();
 
-    const movieIds = data.map((movie) => movie.id);
     // data에서 movieId만 뽑아서 배열[movieIds]로 만들기
     // 중간 테이블에서 movieIds 중 userId 있는 데이터 추출
     if (userId) {
+      const movieIds = data.map((movie) => movie.id);
+
       const likedMovies =
         movieIds.length > 0
-          ? await this.movieUserLikeRepository
-              .createQueryBuilder("mul")
-              .leftJoinAndSelect("mul.movie", "movie")
-              .leftJoinAndSelect("mul.user", "user")
-              .where("movie.id IN (:...movieIds)", {
-                movieIds,
-              })
-              .andWhere("user.id = :userId", { userId })
-              .getMany()
+          ? await this.getLikedMovies(movieIds, userId)
           : [];
 
       // 해당 유저에 좋아요/싫어요 값이 있는 데아터에서 movieId랑 isLike만 추출
@@ -190,31 +229,6 @@ export class MovieService {
       count,
       nextCursor,
     };
-  }
-
-  // 최신 영화 목록
-  async findLatestMovies() {
-    const recentMovies = await this.cacheManager.get(
-      CACHE_KEY.RECENT_MOVIES,
-    );
-
-    if (recentMovies) {
-      return recentMovies; // JSON.parse(recentMovies);
-    }
-
-    const movies = await this.movieRepository.find({
-      order: {
-        createdAt: "DESC",
-      },
-      take: 10,
-    });
-
-    await this.cacheManager.set(
-      CACHE_KEY.RECENT_MOVIES,
-      movies, // JSON.stringify(movies),
-    );
-
-    return movies;
   }
 
   // 상세 조회

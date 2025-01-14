@@ -5,7 +5,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { MovieUserLike } from "../../movie/entities/movie-user-like";
+import { MovieUserLike } from "../../movie/entities/movie-user.like";
 import { Movie } from "../../movie/entities/movie.entity";
 import { BaseTable } from "../../shared/entity/base-table";
 

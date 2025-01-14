@@ -16,7 +16,7 @@ import { DOMAIN_URL } from "../../shared/const/domain.const";
 import { BaseTable } from "../../shared/entity/base-table";
 import { User } from "../../user/entities/user.entity";
 import { MovieDetail } from "./movie-detail.entity";
-import { MovieUserLike } from "./movie-user-like";
+import { MovieUserLike } from "./movie-user.like";
 
 @Entity()
 export class Movie extends BaseTable {
