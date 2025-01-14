@@ -90,9 +90,6 @@ export class MovieService {
   // 좋아요한 영화 조회 => 테스트 커버리지 제외
   /* istanbul ignore next */
   async getLikedMovies(movieIds: number[], userId: number) {
-    console.log("movieIds :", movieIds);
-    console.log("userId :", userId);
-
     return this.movieUserLikeRepository
       .createQueryBuilder("mul")
       .leftJoinAndSelect("mul.movie", "movie")
@@ -131,6 +128,7 @@ export class MovieService {
         .join(",");
 
       const query = `(${whereConditions}) ${comparisonOperator} (${whereParams})`;
+
       qb.where(query, values);
 
       getMovieDto.order = orders;

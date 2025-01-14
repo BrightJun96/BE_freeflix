@@ -3,6 +3,8 @@ import {
   Cache,
   CACHE_MANAGER,
 } from "@nestjs/cache-manager";
+
+import { BadRequestException } from "@nestjs/common";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { DataSource, Repository } from "typeorm";
 import { Director } from "../director/entities/director.entity";
@@ -132,6 +134,8 @@ describe("MovieService", () => {
   describe("findAll", () => {
     let getMoviesMock: jest.SpyInstance;
     let getLikedMoviesMock: jest.SpyInstance;
+    const nextCursor = "sdfsdfsdf";
+
     beforeEach(() => {
       getMoviesMock = jest.spyOn(movieService, "getMovies");
       getLikedMoviesMock = jest.spyOn(
@@ -147,8 +151,6 @@ describe("MovieService", () => {
           title: "movie1",
         },
       ];
-
-      const nextCursor = "sdfsdfsdf";
 
       const dto = {
         title: "movie",
@@ -294,8 +296,9 @@ describe("MovieService", () => {
           "applyCursorPaginationParamsToQb",
         )
         .mockResolvedValue({
-          nextCursor: null,
-        } as any);
+          nextCursor,
+          qb,
+        });
 
       const result = await movieService.findAll(dto);
 
@@ -303,9 +306,139 @@ describe("MovieService", () => {
       expect(qb.getManyAndCount).toHaveBeenCalledWith();
       expect(result).toEqual({
         data: movies,
-        nextCursor: null,
+        nextCursor,
         count: 1,
       });
+    });
+
+    it("should return movies with cursor", async () => {
+      const dto = {
+        cursor:
+          "eyJ2YWx1ZXMiOnsiaWQiOjR9LCJvcmRlcnMiOlsiaWRfREVTQyJdfQ==",
+      } as GetMovieDto;
+
+      const movies = [{ id: 1, title: "movie1" }];
+
+      const query = '(movie."id") < (:id)';
+      const values = {
+        id: 4,
+      };
+
+      const qb: any = {
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([movies, 1]),
+        where: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        alias: "movie",
+      };
+
+      getMoviesMock.mockResolvedValue(qb);
+
+      jest
+        .spyOn(
+          shardService,
+          "applyCursorPaginationParamsToQb",
+        )
+        .mockResolvedValue({
+          nextCursor,
+          qb,
+        });
+
+      const result = await movieService.findAll(dto);
+
+      expect(getMoviesMock).toHaveBeenCalled();
+      expect(qb.where).toHaveBeenCalledWith(query, values);
+
+      expect(
+        shardService.applyCursorPaginationParamsToQb,
+      ).toHaveBeenCalledWith(qb, dto);
+
+      expect(qb.getManyAndCount).toHaveBeenCalled();
+
+      expect(result).toEqual({
+        data: movies,
+        count: 1,
+        nextCursor,
+      });
+    });
+
+    it("should return movies with order", async () => {
+      const dto = {
+        order: ["likeCount_DESC", "id_DESC"],
+      } as GetMovieDto;
+
+      const movies = [{ id: 1, title: "movie1" }];
+
+      const qb: any = {
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([movies, 1]),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        alias: "movie",
+      };
+
+      getMoviesMock.mockResolvedValue(qb);
+
+      jest
+        .spyOn(
+          shardService,
+          "applyCursorPaginationParamsToQb",
+        )
+        .mockResolvedValue({
+          nextCursor,
+          qb,
+        });
+
+      const result = await movieService.findAll(dto);
+
+      expect(getMoviesMock).toHaveBeenCalled();
+
+      expect(
+        shardService.applyCursorPaginationParamsToQb,
+      ).toHaveBeenCalledWith(qb, dto);
+
+      expect(qb.getManyAndCount).toHaveBeenCalled();
+
+      expect(result).toEqual({
+        data: movies,
+        count: 1,
+        nextCursor,
+      });
+    });
+
+    it("should throw an error if direction !== ASC && !==DESC", async () => {
+      const dto = {
+        order: ["likeCount_DES"],
+      } as GetMovieDto;
+
+      const movies = [{ id: 1, title: "movie1" }];
+
+      const qb: any = {
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([movies, 1]),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        alias: "movie",
+      };
+
+      getMoviesMock.mockResolvedValue(qb);
+
+      jest
+        .spyOn(
+          shardService,
+          "applyCursorPaginationParamsToQb",
+        )
+        .mockResolvedValue({
+          nextCursor,
+          qb,
+        });
+
+      await expect(
+        movieService.findAll(dto),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });
