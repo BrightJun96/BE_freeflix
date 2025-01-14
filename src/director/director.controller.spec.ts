@@ -112,7 +112,7 @@ describe("DirectorController", () => {
    * 감독 수정
    */
 
-  describe("update", async () => {
+  describe("update", () => {
     it("should call update method from DirectorService with correct ID and DTO", async () => {
       const updateDirectorDto = { name: "Code Factory" };
       const result = {
@@ -136,7 +136,7 @@ describe("DirectorController", () => {
    * 감독 제거
    */
 
-  describe("remove", async () => {
+  describe("remove", () => {
     it("should call remove method from DirectorService with correct ID", async () => {
       const result = 1;
       jest

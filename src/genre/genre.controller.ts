@@ -37,23 +37,23 @@ export class GenreController {
 
   @Get(":id")
   findOne(
-    @Param("id", ParseIntPipe, PositiveIntPipe) id: string,
+    @Param("id", ParseIntPipe, PositiveIntPipe) id: number,
   ) {
-    return this.genreService.findOne(+id);
+    return this.genreService.findOne(id);
   }
 
   @Patch(":id")
   update(
-    @Param("id", ParseIntPipe, PositiveIntPipe) id: string,
+    @Param("id", ParseIntPipe, PositiveIntPipe) id: number,
     @Body() updateGenreDto: UpdateGenreDto,
   ) {
-    return this.genreService.update(+id, updateGenreDto);
+    return this.genreService.update(id, updateGenreDto);
   }
 
   @Delete(":id")
   remove(
-    @Param("id", ParseIntPipe, PositiveIntPipe) id: string,
+    @Param("id", ParseIntPipe, PositiveIntPipe) id: number,
   ) {
-    return this.genreService.remove(+id);
+    return this.genreService.remove(id);
   }
 }
