@@ -36,6 +36,10 @@ describe("UserController", () => {
     userService = module.get<UserService>(UserService);
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   /**
    * 이거 왜 하는거지? => userController 정의 확인
    */

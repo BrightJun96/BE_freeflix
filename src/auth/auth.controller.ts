@@ -2,7 +2,6 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
-  Get,
   Post,
   Request,
   UseGuards,
@@ -16,7 +15,6 @@ import {
 import { AuthService } from "./auth.service";
 import { Authorization } from "./decorator/authorization.decorator";
 import { Public } from "./decorator/public.decorator";
-import { JwtAuthGuard } from "./strategy/jwt.strategy";
 import { LocalAuthGuard } from "./strategy/local.strategy";
 
 @Controller("auth")
@@ -45,7 +43,6 @@ export class AuthController {
     description: "특정 사용자 차단/토큰(관리자용)",
   })
   blockToken(@Body("token") token: string) {
-    console.log("token", token);
     return this.authService.tokenBlock(token);
   }
 
@@ -55,9 +52,7 @@ export class AuthController {
     description: "accessToken 재발급",
   })
   async rotateAccessToken(@Request() req) {
-    console.log("req.user", req.user);
-
-    this.authService.validateRefreshToken(req.user.type);
+    // this.authService.validateRefreshToken(req.user.type);
 
     return {
       accessToken: await this.authService.issueToken(
@@ -80,11 +75,5 @@ export class AuthController {
         true,
       ),
     };
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get("private")
-  async privateRequest(@Request() req) {
-    return req.user;
   }
 }
