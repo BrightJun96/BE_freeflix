@@ -236,6 +236,10 @@ describe("DirectorService", () => {
         directorRepository.findOne,
       ).toHaveBeenCalledWith(directorId);
 
+      expect(
+        directorRepository.delete,
+      ).toHaveBeenCalledWith(directorId);
+
       expect(result).toEqual(director);
     });
 
