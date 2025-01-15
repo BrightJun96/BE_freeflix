@@ -980,4 +980,44 @@ describe("MovieService", () => {
       ).rejects.toThrow(NotFoundException);
     });
   });
+
+  /**
+   * 감독 찾기
+   */
+  describe("findDirector", () => {
+    const qr = {
+      manager: {
+        findOne: jest.fn(),
+      },
+    } as unknown as jest.Mocked<QueryRunner>;
+
+    const director = {
+      id: 1,
+    };
+
+    const directorId = 1;
+
+    it("should return director", async () => {
+      (qr.manager.findOne as jest.Mock).mockResolvedValue(
+        director,
+      );
+
+      const result = await movieService.findDirector(
+        directorId,
+        qr,
+      );
+
+      expect(result).toEqual(director);
+    });
+
+    it("should throw an error if director is not found", async () => {
+      (qr.manager.findOne as jest.Mock).mockResolvedValue(
+        null,
+      );
+
+      await expect(
+        movieService.findDirector(directorId, qr),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
 });
