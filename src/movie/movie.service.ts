@@ -598,73 +598,38 @@ export class MovieService {
   }
 
   // 장르 찾기
-  async findGenres(genreIds: number[], qr?: QueryRunner) {
-    if (qr) {
-      const genres = await qr.manager.find(Genre, {
-        where: {
-          id: In(genreIds),
-        },
-      });
+  async findGenres(genreIds: number[], qr: QueryRunner) {
+    const genres = await qr.manager.find(Genre, {
+      where: {
+        id: In(genreIds),
+      },
+    });
 
-      if (genres.length !== genreIds.length) {
-        throw new NotFoundException(
-          "존재하지 않는 장르가 있습니다 ." +
-            `존재하는 Ids : ${genres.map((genre) => genre.id).join(",")}`,
-        );
-      }
-
-      return genres;
-    } else {
-      const genres = await this.genreRepository.find({
-        where: {
-          id: In(genreIds),
-        },
-      });
-
-      if (genres.length !== genreIds.length) {
-        throw new NotFoundException(
-          "존재하지 않는 장르가 있습니다 ." +
-            `존재하는 Ids : ${genres.map((genre) => genre.id).join(",")}`,
-        );
-      }
-
-      return;
+    if (genres.length !== genreIds.length) {
+      throw new NotFoundException(
+        "존재하지 않는 장르가 있습니다 ." +
+          `존재하는 Ids : ${genres.map((genre) => genre.id).join(",")}`,
+      );
     }
+
+    return genres;
   }
 
   // 감독 찾기
+  async findDirector(directorId: number, qr: QueryRunner) {
+    const director = await qr.manager.findOne(Director, {
+      where: {
+        id: directorId,
+      },
+    });
 
-  async findDirector(directorId: number, qr?: QueryRunner) {
-    if (qr) {
-      const director = await qr.manager.findOne(Director, {
-        where: {
-          id: directorId,
-        },
-      });
-
-      if (!director) {
-        throw new NotFoundException(
-          "존재하지 않는 감독입니다.",
-        );
-      }
-
-      return director;
-    } else {
-      const director =
-        await this.directorRepository.findOne({
-          where: {
-            id: directorId,
-          },
-        });
-
-      if (!director) {
-        throw new NotFoundException(
-          "존재하지 않는 감독입니다.",
-        );
-      }
-
-      return director;
+    if (!director) {
+      throw new NotFoundException(
+        "존재하지 않는 감독입니다.",
+      );
     }
+
+    return director;
   }
 
   async likeMovie(movieId: number, userId: number) {

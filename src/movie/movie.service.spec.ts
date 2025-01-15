@@ -936,4 +936,48 @@ describe("MovieService", () => {
       ).rejects.toThrow(NotFoundException);
     });
   });
+
+  /**
+   * 장르 찾기
+   */
+  describe("findGenres", () => {
+    const qr = {
+      manager: {
+        find: jest.fn(),
+      },
+    } as unknown as jest.Mocked<QueryRunner>;
+
+    const genreIds = [1, 2];
+    const genres = [
+      {
+        id: 1,
+      },
+      {
+        id: 2,
+      },
+    ];
+
+    beforeEach(() => {
+      (qr.manager.find as jest.Mock).mockResolvedValueOnce(
+        genres,
+      );
+    });
+
+    it("should return genres", async () => {
+      const result = await movieService.findGenres(
+        genreIds,
+        qr,
+      );
+
+      expect(result).toEqual(genres);
+    });
+
+    it("should throw an error if genreIds are not match find genre's id", async () => {
+      genreIds.push(3);
+
+      await expect(
+        movieService.findGenres(genreIds, qr),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
 });
