@@ -19,9 +19,11 @@ import { Director } from "../director/entities/director.entity";
 import { Genre } from "../genre/entities/genre.entity";
 import { CACHE_KEY } from "../shared/const/cache-key.const";
 import { SharedService } from "../shared/shared.service";
+import { User } from "../user/entities/user.entity";
 import { UserService } from "../user/user.service";
 import { CreateMovieDto } from "./dto/create-movie.dto";
 import { GetMovieDto } from "./dto/get-movie.dto";
+import { UpdateMovieDto } from "./dto/update-movie.dto";
 import { MovieDetail } from "./entities/movie-detail.entity";
 import { MovieUserLike } from "./entities/movie-user.like";
 import { Movie } from "./entities/movie.entity";
@@ -722,4 +724,502 @@ describe("MovieService", () => {
   /**
    * 영화 수정
    */
+  describe("update", () => {
+    const movieId = 1;
+    // 수정 이전 영화
+    const movieBeforeUpdate = {
+      id: 1,
+      title: "타노스 일대기",
+      director: {
+        id: 1,
+        name: "jjalseu",
+      },
+      genres: [
+        {
+          id: 1,
+        },
+      ],
+      detail: {
+        id: 1,
+      },
+    };
+
+    // 수정 이후 영화
+    const movieAfterUpdate = {
+      id: 1,
+      title: "어벤져스",
+      director: {
+        id: 2,
+        name: "john",
+      },
+      genres: [
+        {
+          id: 1,
+        },
+        {
+          id: 2,
+        },
+      ],
+      detail: {
+        id: 2,
+      },
+    };
+
+    const updateMovieDto: UpdateMovieDto = {
+      title: "어벤져스",
+      directorId: 2,
+      genreIds: [1, 2],
+      detail: "타노스 죽음",
+    };
+
+    const updatedDirector = {
+      id: 2,
+    };
+
+    const updatedGenres = [{ id: 1 }, { id: 2 }];
+
+    let qr: jest.Mocked<QueryRunner>;
+
+    let updateMovieMock: jest.SpyInstance;
+    let findDirectorMock: jest.SpyInstance;
+    let findGenresMock: jest.SpyInstance;
+    let updateMovieDetailMock: jest.SpyInstance;
+    let updateMovieGenreRelationMock: jest.SpyInstance;
+
+    beforeEach(() => {
+      qr = {
+        manager: {
+          findOne: jest.fn(),
+        },
+      } as any as jest.Mocked<QueryRunner>;
+
+      updateMovieMock = jest.spyOn(
+        movieService,
+        "updateMovie",
+      );
+
+      findDirectorMock = jest.spyOn(
+        movieService,
+        "findDirector",
+      );
+
+      findGenresMock = jest.spyOn(
+        movieService,
+        "findGenres",
+      );
+
+      updateMovieGenreRelationMock = jest.spyOn(
+        movieService,
+        "updateMovieGenreRelation",
+      );
+
+      updateMovieDetailMock = jest.spyOn(
+        movieService,
+        "updateMovieDetail",
+      );
+
+      (
+        qr.manager.findOne as jest.Mock
+      ).mockResolvedValueOnce(movieBeforeUpdate);
+
+      (
+        qr.manager.findOne as jest.Mock
+      ).mockResolvedValueOnce(movieAfterUpdate);
+
+      updateMovieMock.mockResolvedValue(undefined);
+
+      findDirectorMock.mockResolvedValue(updatedDirector);
+
+      findGenresMock.mockResolvedValue(updatedGenres);
+
+      updateMovieGenreRelationMock.mockResolvedValue(
+        undefined,
+      );
+
+      updateMovieDetailMock.mockResolvedValue(undefined);
+    });
+
+    /**
+     * 영화 수정 정상 작동 테스트
+     */
+
+    it("should update a movie", async () => {
+      const result = await movieService.update(
+        movieId,
+        updateMovieDto,
+        qr,
+      );
+
+      expect(result.title).not.toEqual(
+        movieBeforeUpdate.title,
+      );
+
+      expect(result.director.id).not.toEqual(
+        movieBeforeUpdate.director.id,
+      );
+
+      const sumResultGenreIdResult = result.genres.reduce(
+        (acc, cur) => acc + cur.id,
+        0,
+      );
+
+      const sumBeforeMovieGenreIdResult =
+        movieBeforeUpdate.genres.reduce(
+          (acc, cur) => acc + cur.id,
+          0,
+        );
+
+      expect(sumResultGenreIdResult).not.toEqual(
+        sumBeforeMovieGenreIdResult,
+      );
+
+      expect(result.detail.id).not.toEqual(
+        movieBeforeUpdate.detail.id,
+      );
+    });
+  });
+
+  /**
+   * 영화 삭제
+   */
+  describe("remove", () => {
+    const movieId = 1;
+
+    const movie = {
+      id: 1,
+      title: "movie",
+      detail: {
+        id: 1,
+      },
+    };
+
+    let qr: jest.Mocked<QueryRunner>;
+    let removeMovieMock: jest.SpyInstance;
+    let removeMovieDetailMock: jest.SpyInstance;
+
+    beforeEach(() => {
+      qr = {
+        manager: {
+          findOne: jest.fn(),
+        },
+      } as any as jest.Mocked<QueryRunner>;
+
+      removeMovieMock = jest.spyOn(
+        movieService,
+        "removeMovie",
+      );
+
+      removeMovieDetailMock = jest.spyOn(
+        movieService,
+        "removeMovieDetail",
+      );
+
+      removeMovieMock.mockResolvedValue(undefined);
+
+      removeMovieDetailMock.mockResolvedValue(undefined);
+    });
+
+    it("should remove a movie", async () => {
+      (qr.manager.findOne as jest.Mock).mockResolvedValue(
+        movie,
+      );
+      const result = await movieService.remove(movieId, qr);
+
+      expect(result).toEqual(movie);
+    });
+
+    it("should throw an error if movie is not found", async () => {
+      (qr.manager.findOne as jest.Mock).mockResolvedValue(
+        null,
+      );
+      await expect(
+        movieService.remove(movieId, qr),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  /**
+   * 장르 찾기
+   */
+  describe("findGenres", () => {
+    const qr = {
+      manager: {
+        find: jest.fn(),
+      },
+    } as unknown as jest.Mocked<QueryRunner>;
+
+    const genreIds = [1, 2];
+    const genres = [
+      {
+        id: 1,
+      },
+      {
+        id: 2,
+      },
+    ];
+
+    beforeEach(() => {
+      (qr.manager.find as jest.Mock).mockResolvedValueOnce(
+        genres,
+      );
+    });
+
+    it("should return genres", async () => {
+      const result = await movieService.findGenres(
+        genreIds,
+        qr,
+      );
+
+      expect(result).toEqual(genres);
+    });
+
+    it("should throw an error if genreIds are not match find genre's id", async () => {
+      genreIds.push(3);
+
+      await expect(
+        movieService.findGenres(genreIds, qr),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  /**
+   * 감독 찾기
+   */
+  describe("findDirector", () => {
+    const qr = {
+      manager: {
+        findOne: jest.fn(),
+      },
+    } as unknown as jest.Mocked<QueryRunner>;
+
+    const director = {
+      id: 1,
+    };
+
+    const directorId = 1;
+
+    it("should return director", async () => {
+      (qr.manager.findOne as jest.Mock).mockResolvedValue(
+        director,
+      );
+
+      const result = await movieService.findDirector(
+        directorId,
+        qr,
+      );
+
+      expect(result).toEqual(director);
+    });
+
+    it("should throw an error if director is not found", async () => {
+      (qr.manager.findOne as jest.Mock).mockResolvedValue(
+        null,
+      );
+
+      await expect(
+        movieService.findDirector(directorId, qr),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  /**
+   * 좋아요,싫어요 주요 로직 메서드
+   */
+  describe("likeHandler", () => {
+    const movie = {
+      id: 1,
+      title: "어벤져스",
+    };
+
+    const movieId = 1;
+
+    const user = {
+      id: 1,
+      email: "test@test.com",
+    };
+
+    const userId = 1;
+    const mulBeforeUpdate = {
+      isLike: true,
+      movieId: 1,
+      userId: 1,
+    };
+
+    let mulAfterUpdate = {
+      isLike: true,
+      movieId: 1,
+      userId: 1,
+    };
+
+    let getMovieUserLikeRelationMock: jest.SpyInstance;
+    let saveMul: jest.SpyInstance;
+    let deleteMul: jest.SpyInstance;
+    let updateMul: jest.SpyInstance;
+    beforeEach(() => {
+      jest
+        .spyOn(movieService, "findOne")
+        .mockResolvedValue(movie as Movie);
+
+      jest
+        .spyOn(userService, "findOne")
+        .mockResolvedValue(user as User);
+
+      getMovieUserLikeRelationMock = jest.spyOn(
+        movieService,
+        "getMovieUserLikeRelation",
+      );
+
+      saveMul = jest.spyOn(movieUserLikeRepository, "save");
+      deleteMul = jest.spyOn(
+        movieUserLikeRepository,
+        "delete",
+      );
+      updateMul = jest.spyOn(
+        movieUserLikeRepository,
+        "update",
+      );
+    });
+
+    it("should update movie's like If the user has not liked the movie when user press movie's like button", async () => {
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        null,
+      );
+
+      saveMul.mockResolvedValue(undefined);
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulAfterUpdate,
+      );
+
+      const result = await movieService.likeHandler(
+        movieId,
+        userId,
+        "LIKE",
+      );
+
+      expect(result.isLike).toEqual(mulAfterUpdate.isLike);
+    });
+
+    it("should update movie's like If the user has liked the movie when user press movie's like button", async () => {
+      mulAfterUpdate = null;
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulBeforeUpdate,
+      );
+
+      deleteMul.mockResolvedValue(undefined);
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulAfterUpdate,
+      );
+
+      const result = await movieService.likeHandler(
+        movieId,
+        userId,
+        "LIKE",
+      );
+
+      expect(result.isLike).toEqual(false);
+    });
+
+    it("should update movie's like If the user has disliked the movie when user press movie's like button", async () => {
+      mulBeforeUpdate.isLike = false;
+
+      mulAfterUpdate = {
+        userId: 1,
+        movieId: 1,
+        isLike: true,
+      };
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulBeforeUpdate,
+      );
+
+      updateMul.mockResolvedValue(undefined);
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulAfterUpdate,
+      );
+
+      const result = await movieService.likeHandler(
+        movieId,
+        userId,
+        "LIKE",
+      );
+
+      expect(result.isLike).toEqual(true);
+    });
+
+    it("should update movie's dislike If the user has not disliked the movie when user press movie's dislike button", async () => {
+      mulBeforeUpdate.isLike = false;
+      mulAfterUpdate.isLike = false;
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        null,
+      );
+
+      saveMul.mockResolvedValue(undefined);
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulAfterUpdate,
+      );
+
+      const result = await movieService.likeHandler(
+        movieId,
+        userId,
+        "DISLIKE",
+      );
+
+      expect(result.isDislike).toEqual(true);
+    });
+
+    it("should update movie's dislike If the user has disliked the movie when user press movie's dislike button", async () => {
+      mulAfterUpdate = null;
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulBeforeUpdate,
+      );
+
+      deleteMul.mockResolvedValue(undefined);
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulAfterUpdate,
+      );
+
+      const result = await movieService.likeHandler(
+        movieId,
+        userId,
+        "DISLIKE",
+      );
+
+      expect(result.isDislike).toEqual(false);
+    });
+
+    it("should update movie's dislike If the user has liked the movie when user press movie's dislike button", async () => {
+      mulBeforeUpdate.isLike = true;
+
+      mulAfterUpdate = {
+        userId: 1,
+        movieId: 1,
+        isLike: false,
+      };
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulBeforeUpdate,
+      );
+
+      updateMul.mockResolvedValue(undefined);
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulAfterUpdate,
+      );
+
+      const result = await movieService.likeHandler(
+        movieId,
+        userId,
+        "DISLIKE",
+      );
+
+      expect(result.isDislike).toEqual(true);
+    });
+  });
 });
