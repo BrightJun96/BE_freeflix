@@ -109,11 +109,13 @@ export class MovieController {
   }
 
   @Delete(":id")
-  // @RBAC(Role.admin)
+  @RBAC(Role.admin)
+  @UseInterceptors(TransactionInterceptor)
   deleteMovie(
     @Param("id", ParseIntPipe, PositiveIntPipe) id: number,
+    @QueryRunner() qr: QR,
   ) {
-    return this.movieService.remove(id);
+    return this.movieService.remove(id, qr);
   }
 
   // 좋아요

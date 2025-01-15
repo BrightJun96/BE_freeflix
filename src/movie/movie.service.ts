@@ -550,8 +550,8 @@ export class MovieService {
   }
 
   // 삭제
-  async remove(id: number) {
-    const movie = await this.movieRepository.findOne({
+  async remove(id: number, qr: QueryRunner) {
+    const movie = await qr.manager.findOne(Movie, {
       where: {
         id,
       },
@@ -564,17 +564,20 @@ export class MovieService {
     }
 
     // 영화 삭제
-    // await this.movieRepository.delete(id);
-    await this.movieRepository
+    await qr.manager
       .createQueryBuilder()
       .delete()
+      .from(Movie)
       .where("id = :id", { id })
       .execute();
 
     // 영화 상세 삭제
-    await this.movieDetailRepository.delete(
-      movie.detail.id,
-    );
+    await qr.manager
+      .createQueryBuilder()
+      .delete()
+      .from(MovieDetail)
+      .where("id = :id", { id: movie.detail.id })
+      .execute();
 
     return movie;
   }
