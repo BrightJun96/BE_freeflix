@@ -4,14 +4,23 @@ import {
   CACHE_MANAGER,
 } from "@nestjs/cache-manager";
 
-import { BadRequestException } from "@nestjs/common";
+import {
+  BadRequestException,
+  NotFoundException,
+} from "@nestjs/common";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { DataSource, Repository } from "typeorm";
+import {
+  DataSource,
+  In,
+  QueryRunner,
+  Repository,
+} from "typeorm";
 import { Director } from "../director/entities/director.entity";
 import { Genre } from "../genre/entities/genre.entity";
 import { CACHE_KEY } from "../shared/const/cache-key.const";
 import { SharedService } from "../shared/shared.service";
 import { UserService } from "../user/user.service";
+import { CreateMovieDto } from "./dto/create-movie.dto";
 import { GetMovieDto } from "./dto/get-movie.dto";
 import { MovieDetail } from "./entities/movie-detail.entity";
 import { MovieUserLike } from "./entities/movie-user.like";
@@ -73,6 +82,9 @@ describe("MovieService", () => {
     expect(movieService).toBeDefined();
   });
 
+  /**
+   * 최신 영화 목록
+   */
   describe("findLatestMovies", () => {
     it("should return latestMovies", async () => {
       const cachedMovies = [
@@ -131,6 +143,9 @@ describe("MovieService", () => {
     });
   });
 
+  /**
+   * 영화 목록
+   */
   describe("findAll", () => {
     let getMoviesMock: jest.SpyInstance;
     let getLikedMoviesMock: jest.SpyInstance;
@@ -441,4 +456,270 @@ describe("MovieService", () => {
       ).rejects.toThrow(BadRequestException);
     });
   });
+
+  /**
+   * 영화 상세
+   */
+  describe("findOne", () => {
+    let getMovieMock: jest.SpyInstance;
+
+    beforeEach(() => {
+      getMovieMock = jest.spyOn(
+        movieService,
+        "getMovieDetail",
+      );
+    });
+    it("should return a movie", async () => {
+      const movieId = 1;
+
+      const movie = {
+        title: "movie1",
+      };
+
+      getMovieMock.mockResolvedValue(movie);
+
+      const result = await movieService.findOne(movieId);
+
+      expect(getMovieMock).toHaveBeenCalledWith(1);
+
+      expect(result).toEqual(movie);
+    });
+
+    it("should throw an error if movie is not found", async () => {
+      const movieId = 1;
+
+      getMovieMock.mockResolvedValue(null);
+
+      await expect(
+        movieService.findOne(movieId),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(getMovieMock).toHaveBeenCalledWith(1);
+    });
+  });
+
+  /**
+   * 영화 생성
+   */
+
+  describe("create", () => {
+    let createMovieDto: CreateMovieDto = {
+      title: "movie1",
+      genreIds: [1, 2],
+      detail: "movie1 details",
+      directorId: 1,
+      movieFilePath: "filepath",
+    };
+
+    const movie = {
+      ...createMovieDto,
+      id: 1,
+    };
+
+    const genres = [
+      {
+        id: 1,
+        name: "fantasy",
+      },
+      {
+        id: 2,
+        name: "romantic",
+      },
+    ];
+
+    const director = {
+      id: 1,
+      name: "jjalseu",
+      dob: new Date("1996-11-15"),
+    };
+
+    const userId = 1;
+
+    let qr: jest.Mocked<QueryRunner>;
+
+    let createMovieDetailMock: jest.SpyInstance;
+    let createMovieMock: jest.SpyInstance;
+    let createMovieGenreRelationMock: jest.SpyInstance;
+    let renameMovieFileMock: jest.SpyInstance;
+    const movieDetailInsertResult = {
+      identifiers: [{ id: 1 }],
+    };
+
+    const movieInsertResult = {
+      identifiers: [{ id: 1 }],
+    };
+
+    beforeEach(() => {
+      qr = {
+        manager: {
+          findOne: jest.fn(),
+          find: jest.fn(),
+        },
+      } as any as jest.Mocked<QueryRunner>;
+
+      createMovieDetailMock = jest.spyOn(
+        movieService,
+        "createMovieDetail",
+      );
+
+      createMovieMock = jest.spyOn(
+        movieService,
+        "createMovie",
+      );
+
+      createMovieGenreRelationMock = jest.spyOn(
+        movieService,
+        "createMovieGenreRelation",
+      );
+      renameMovieFileMock = jest.spyOn(
+        movieService,
+        "renameMovieFile",
+      );
+
+      (qr.manager.find as jest.Mock).mockResolvedValue(
+        genres,
+      );
+
+      createMovieDetailMock.mockResolvedValue(
+        movieDetailInsertResult,
+      );
+      createMovieMock.mockResolvedValue(movieInsertResult);
+
+      createMovieGenreRelationMock.mockResolvedValue(
+        undefined,
+      );
+
+      renameMovieFileMock.mockResolvedValue(undefined);
+    });
+
+    /**
+     * 영화 생성 정상 작동 테스트
+     */
+    it("should create a movie", async () => {
+      (
+        qr.manager.findOne as jest.Mock
+      ).mockResolvedValueOnce(director);
+
+      (
+        qr.manager.findOne as jest.Mock
+      ).mockResolvedValueOnce(null);
+
+      (
+        qr.manager.findOne as jest.Mock
+      ).mockResolvedValueOnce(movie);
+
+      const result = await movieService.create(
+        createMovieDto as CreateMovieDto,
+        userId,
+        qr,
+      );
+
+      expect(qr.manager.find).toHaveBeenCalledWith(Genre, {
+        where: {
+          id: In(createMovieDto.genreIds),
+        },
+      });
+
+      expect(qr.manager.findOne).toHaveBeenNthCalledWith(
+        1,
+        Director,
+        {
+          where: {
+            id: createMovieDto.directorId,
+          },
+        },
+      );
+
+      expect(createMovieDetailMock).toHaveBeenCalledWith(
+        qr,
+        createMovieDto,
+      );
+
+      expect(qr.manager.findOne).toHaveBeenNthCalledWith(
+        2,
+        Movie,
+        {
+          where: {
+            title: createMovieDto.title,
+          },
+        },
+      );
+
+      expect(createMovieMock).toHaveBeenCalledWith(
+        qr,
+        createMovieDto,
+        movieDetailInsertResult.identifiers[0].id,
+        expect.any(String),
+        director,
+        userId,
+      );
+
+      expect(
+        createMovieGenreRelationMock,
+      ).toHaveBeenCalledWith(
+        qr,
+        movieInsertResult.identifiers[0].id,
+        genres,
+      );
+
+      expect(renameMovieFileMock).toHaveBeenCalledWith(
+        createMovieDto,
+      );
+
+      expect(result).toEqual(movie);
+    });
+
+    /**
+     * 영화 생성시 존재하지 않는 장르로 생성할시,
+     */
+    it("should throw an error when a non-existent genre is used to create a movie", async () => {
+      createMovieDto = {
+        ...createMovieDto,
+        genreIds: [...createMovieDto.genreIds, 3],
+      };
+
+      await expect(
+        movieService.create(createMovieDto, userId, qr),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    /**
+     * 영화 생성시 존재하지 감독으로 생성시
+     */
+    it("should throw an error when a non-existent director is used to create a movie", async () => {
+      createMovieDto = {
+        ...createMovieDto,
+        genreIds: [1, 2],
+      };
+
+      (
+        qr.manager.findOne as jest.Mock
+      ).mockResolvedValueOnce(null);
+
+      await expect(
+        movieService.create(createMovieDto, userId, qr),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    /**
+     * 영화 생성시 이미 존재하는 영화로 생성시
+     */
+    it("should throw an error when a existent movie is used to create a movie", async () => {
+      (
+        qr.manager.findOne as jest.Mock
+      ).mockResolvedValueOnce(director);
+
+      (
+        qr.manager.findOne as jest.Mock
+      ).mockResolvedValueOnce(movie);
+
+      await expect(
+        movieService.create(createMovieDto, userId, qr),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  /**
+   * 영화 수정
+   */
 });
