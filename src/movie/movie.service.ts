@@ -199,6 +199,56 @@ export class MovieService {
     }
   }
 
+  // 영화 수정 쿼리
+  /* istanbul ignore next */
+  async updateMovie(
+    qr: QueryRunner,
+    movieUpdateFields: UpdateMovieDto,
+    movieId: number,
+  ) {
+    await qr.manager
+      .createQueryBuilder()
+      .update(Movie)
+      .set(movieUpdateFields)
+      .where("id = :id", { id: movieId })
+      .execute();
+  }
+
+  // 영화 상세 수정
+  /* istanbul ignore next */
+  async updateMovieDetail(
+    qr: QueryRunner,
+    detail: string,
+    movieId: number,
+  ) {
+    await qr.manager
+      .createQueryBuilder()
+      .update(MovieDetail)
+      .set({
+        detail,
+      })
+      .where("id = :id", { id: movieId })
+      .execute();
+  }
+
+  // 영화 <=> 장르 관계 수정
+  /* istanbul ignore next */
+  async updateMovieGenreRelation(
+    qr: QueryRunner,
+    movieId: number,
+    newGenres: Genre[],
+    movie: Movie,
+  ) {
+    await qr.manager
+      .createQueryBuilder()
+      .relation(Movie, "genres")
+      .of(movieId)
+      .addAndRemove(
+        newGenres.map((genre) => genre.id),
+        movie.genres.map((genre) => genre.id),
+      );
+  }
+
   // 목록 조회(페이지네이션 및 검색)
   async findAll(getMovieDto: GetMovieDto, userId?: number) {
     const { title, cursor } = getMovieDto;
@@ -432,7 +482,16 @@ export class MovieService {
     qr: QueryRunner,
   ) {
     // 영화 상세 조회
-    const movie = await this.findOne(id);
+    const movie = await qr.manager.findOne(Movie, {
+      relations: [
+        Relations.DETAIL,
+        Relations.DIRECTOR,
+        Relations.GENRES,
+      ],
+      where: {
+        id,
+      },
+    });
 
     const { detail, directorId, genreIds, ...movieRest } =
       updateMovieDto;
@@ -450,42 +509,32 @@ export class MovieService {
     }
 
     // 영화 수정 필드
-    const movieUpdateFields = {
+    const movieUpdateFields: UpdateMovieDto = {
       ...movieRest,
       ...(newDirector && { director: newDirector }),
     };
 
     // 영화 수정
-    await qr.manager
-      .createQueryBuilder()
-      .update(Movie)
-      .set(movieUpdateFields)
-      .where("id = :id", { id })
-      .execute();
+    await this.updateMovie(qr, movieUpdateFields, id);
 
     // detail이 있다면 detail 수정
     if (detail) {
-      await qr.manager
-        .createQueryBuilder()
-        .update(MovieDetail)
-        .set({
-          detail,
-        })
-        .where("id = :id", { id: movie.detail.id })
-        .execute();
+      await this.updateMovieDetail(
+        qr,
+        detail,
+        movie.detail.id,
+      );
     }
 
     // 장르 수정
 
     if (newGenres) {
-      await qr.manager
-        .createQueryBuilder()
-        .relation(Movie, "genres")
-        .of(id)
-        .addAndRemove(
-          newGenres.map((genre) => genre.id),
-          movie.genres.map((genre) => genre.id),
-        );
+      await this.updateMovieGenreRelation(
+        qr,
+        id,
+        newGenres,
+        movie,
+      );
     }
 
     return qr.manager.findOne(Movie, {
@@ -498,17 +547,6 @@ export class MovieService {
         Relations.GENRES,
       ],
     });
-
-    // return this.movieRepository.findOne({
-    //   where: {
-    //     id,
-    //   },
-    //   relations: [
-    //     Relations.DETAIL,
-    //     Relations.DIRECTOR,
-    //     Relations.GENRES,
-    //   ],
-    // });
   }
 
   // 삭제
@@ -577,6 +615,7 @@ export class MovieService {
   }
 
   // 감독 찾기
+
   async findDirector(directorId: number, qr?: QueryRunner) {
     if (qr) {
       const director = await qr.manager.findOne(Director, {

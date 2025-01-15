@@ -22,6 +22,7 @@ import { SharedService } from "../shared/shared.service";
 import { UserService } from "../user/user.service";
 import { CreateMovieDto } from "./dto/create-movie.dto";
 import { GetMovieDto } from "./dto/get-movie.dto";
+import { UpdateMovieDto } from "./dto/update-movie.dto";
 import { MovieDetail } from "./entities/movie-detail.entity";
 import { MovieUserLike } from "./entities/movie-user.like";
 import { Movie } from "./entities/movie.entity";
@@ -722,4 +723,158 @@ describe("MovieService", () => {
   /**
    * 영화 수정
    */
+  describe("update", () => {
+    const movieId = 1;
+    // 수정 이전 영화
+    const movieBeforeUpdate = {
+      id: 1,
+      title: "타노스 일대기",
+      director: {
+        id: 1,
+        name: "jjalseu",
+      },
+      genres: [
+        {
+          id: 1,
+        },
+      ],
+      detail: {
+        id: 1,
+      },
+    };
+
+    // 수정 이후 영화
+    const movieAfterUpdate = {
+      id: 1,
+      title: "어벤져스",
+      director: {
+        id: 2,
+        name: "john",
+      },
+      genres: [
+        {
+          id: 1,
+        },
+        {
+          id: 2,
+        },
+      ],
+      detail: {
+        id: 2,
+      },
+    };
+
+    const updateMovieDto: UpdateMovieDto = {
+      title: "어벤져스",
+      directorId: 2,
+      genreIds: [1, 2],
+      detail: "타노스 죽음",
+    };
+
+    const updatedDirector = {
+      id: 2,
+    };
+
+    const updatedGenres = [{ id: 1 }, { id: 2 }];
+
+    let qr: jest.Mocked<QueryRunner>;
+
+    let updateMovieMock: jest.SpyInstance;
+    let findDirectorMock: jest.SpyInstance;
+    let findGenresMock: jest.SpyInstance;
+    let updateMovieDetailMock: jest.SpyInstance;
+    let updateMovieGenreRelationMock: jest.SpyInstance;
+
+    beforeEach(() => {
+      qr = {
+        manager: {
+          findOne: jest.fn(),
+        },
+      } as any as jest.Mocked<QueryRunner>;
+
+      updateMovieMock = jest.spyOn(
+        movieService,
+        "updateMovie",
+      );
+
+      findDirectorMock = jest.spyOn(
+        movieService,
+        "findDirector",
+      );
+
+      findGenresMock = jest.spyOn(
+        movieService,
+        "findGenres",
+      );
+
+      updateMovieGenreRelationMock = jest.spyOn(
+        movieService,
+        "updateMovieGenreRelation",
+      );
+
+      updateMovieDetailMock = jest.spyOn(
+        movieService,
+        "updateMovieDetail",
+      );
+
+      (
+        qr.manager.findOne as jest.Mock
+      ).mockResolvedValueOnce(movieBeforeUpdate);
+
+      (
+        qr.manager.findOne as jest.Mock
+      ).mockResolvedValueOnce(movieAfterUpdate);
+
+      updateMovieMock.mockResolvedValue(undefined);
+
+      findDirectorMock.mockResolvedValue(updatedDirector);
+
+      findGenresMock.mockResolvedValue(updatedGenres);
+
+      updateMovieGenreRelationMock.mockResolvedValue(
+        undefined,
+      );
+
+      updateMovieDetailMock.mockResolvedValue(undefined);
+    });
+
+    /**
+     * 영화 수정 정상 작동 테스트
+     */
+
+    it("should update a movie", async () => {
+      const result = await movieService.update(
+        movieId,
+        updateMovieDto,
+        qr,
+      );
+
+      expect(result.title).not.toEqual(
+        movieBeforeUpdate.title,
+      );
+
+      expect(result.director.id).not.toEqual(
+        movieBeforeUpdate.director.id,
+      );
+
+      const sumResultGenreIdResult = result.genres.reduce(
+        (acc, cur) => acc + cur.id,
+        0,
+      );
+
+      const sumBeforeMovieGenreIdResult =
+        movieBeforeUpdate.genres.reduce(
+          (acc, cur) => acc + cur.id,
+          0,
+        );
+
+      expect(sumResultGenreIdResult).not.toEqual(
+        sumBeforeMovieGenreIdResult,
+      );
+
+      expect(result.detail.id).not.toEqual(
+        movieBeforeUpdate.detail.id,
+      );
+    });
+  });
 });
