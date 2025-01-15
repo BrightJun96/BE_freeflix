@@ -877,4 +877,63 @@ describe("MovieService", () => {
       );
     });
   });
+
+  /**
+   * 영화 삭제
+   */
+  describe("remove", () => {
+    const movieId = 1;
+
+    const movie = {
+      id: 1,
+      title: "movie",
+      detail: {
+        id: 1,
+      },
+    };
+
+    let qr: jest.Mocked<QueryRunner>;
+    let removeMovieMock: jest.SpyInstance;
+    let removeMovieDetailMock: jest.SpyInstance;
+
+    beforeEach(() => {
+      qr = {
+        manager: {
+          findOne: jest.fn(),
+        },
+      } as any as jest.Mocked<QueryRunner>;
+
+      removeMovieMock = jest.spyOn(
+        movieService,
+        "removeMovie",
+      );
+
+      removeMovieDetailMock = jest.spyOn(
+        movieService,
+        "removeMovieDetail",
+      );
+
+      removeMovieMock.mockResolvedValue(undefined);
+
+      removeMovieDetailMock.mockResolvedValue(undefined);
+    });
+
+    it("should remove a movie", async () => {
+      (qr.manager.findOne as jest.Mock).mockResolvedValue(
+        movie,
+      );
+      const result = await movieService.remove(movieId, qr);
+
+      expect(result).toEqual(movie);
+    });
+
+    it("should throw an error if movie is not found", async () => {
+      (qr.manager.findOne as jest.Mock).mockResolvedValue(
+        null,
+      );
+      await expect(
+        movieService.remove(movieId, qr),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
 });

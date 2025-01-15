@@ -249,6 +249,31 @@ export class MovieService {
       );
   }
 
+  // 영화 삭제 쿼리
+  /* istanbul ignore next */
+  async removeMovie(qr: QueryRunner, movieId: number) {
+    await qr.manager
+      .createQueryBuilder()
+      .delete()
+      .from(Movie)
+      .where("id = :id", { id: movieId })
+      .execute();
+  }
+
+  // 영화 상세 삭제 쿼리
+  /* istanbul ignore next */
+  async removeMovieDetail(
+    qr: QueryRunner,
+    movieDetailId: number,
+  ) {
+    await qr.manager
+      .createQueryBuilder()
+      .delete()
+      .from(MovieDetail)
+      .where("id = :id", { id: movieDetailId })
+      .execute();
+  }
+
   // 목록 조회(페이지네이션 및 검색)
   async findAll(getMovieDto: GetMovieDto, userId?: number) {
     const { title, cursor } = getMovieDto;
@@ -564,20 +589,10 @@ export class MovieService {
     }
 
     // 영화 삭제
-    await qr.manager
-      .createQueryBuilder()
-      .delete()
-      .from(Movie)
-      .where("id = :id", { id })
-      .execute();
+    await this.removeMovie(qr, id);
 
     // 영화 상세 삭제
-    await qr.manager
-      .createQueryBuilder()
-      .delete()
-      .from(MovieDetail)
-      .where("id = :id", { id: movie.detail.id })
-      .execute();
+    await this.removeMovieDetail(qr, movie.detail.id);
 
     return movie;
   }
