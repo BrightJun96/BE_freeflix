@@ -99,22 +99,21 @@ export class MovieController {
 
   @Patch(":id")
   @RBAC(Role.admin)
+  @UseInterceptors(TransactionInterceptor)
   patchMovie(
-    @Param("id", ParseIntPipe, PositiveIntPipe) id: string,
+    @Param("id", ParseIntPipe, PositiveIntPipe) id: number,
     @Body() updateMovieDto: UpdateMovieDto,
+    @QueryRunner() qr: QR,
   ) {
-    return this.movieService.update(
-      Number(id),
-      updateMovieDto,
-    );
+    return this.movieService.update(id, updateMovieDto, qr);
   }
 
   @Delete(":id")
   // @RBAC(Role.admin)
   deleteMovie(
-    @Param("id", ParseIntPipe, PositiveIntPipe) id: string,
+    @Param("id", ParseIntPipe, PositiveIntPipe) id: number,
   ) {
-    return this.movieService.remove(Number(id));
+    return this.movieService.remove(id);
   }
 
   // 좋아요
