@@ -32,6 +32,10 @@ import { MovieDetail } from "./entities/movie-detail.entity";
 import { MovieUserLike } from "./entities/movie-user.like";
 import { Movie } from "./entities/movie.entity";
 
+interface LikeStatusReturnType {
+  isLike?: boolean;
+  isDislike?: boolean;
+}
 @Injectable()
 export class MovieService {
   constructor(
@@ -51,6 +55,8 @@ export class MovieService {
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
   ) {}
+
+  // 단순 영화 조회 => 테스트 커버리지 제외 => 단순 레포지터리 조회기 때문에 테스트하지 않아도됨.
 
   // 최신 영화 목록
   async findLatestMovies() {
@@ -77,7 +83,8 @@ export class MovieService {
     return movies;
   }
 
-  // 단순 영화 조회 => 테스트 커버리지 제외 => 단순 레포지터리 조회기 때문에 테스트하지 않아도됨.
+  // 좋아요한 영화 조회 => 테스트 커버리지 제외
+
   /* istanbul ignore next */
   async getMovies() {
     return this.movieRepository
@@ -86,8 +93,8 @@ export class MovieService {
       .leftJoinAndSelect("movie.director", "director")
       .leftJoinAndSelect("movie.genres", "genres");
   }
+  // 영화 상세 쿼리 데이터 조회
 
-  // 좋아요한 영화 조회 => 테스트 커버리지 제외
   /* istanbul ignore next */
   async getLikedMovies(movieIds: number[], userId: number) {
     return this.movieUserLikeRepository
@@ -100,7 +107,9 @@ export class MovieService {
       .andWhere("user.id = :userId", { userId })
       .getMany();
   }
-  // 영화 상세 쿼리 데이터 조회
+
+  // 영화 생성 쿼리
+
   /* istanbul ignore next */
   async getMovieDetail(movieId: number) {
     return await this.movieRepository
@@ -112,8 +121,8 @@ export class MovieService {
       .where("movie.id = :id", { id: movieId })
       .getOne();
   }
+  // 영화 상세 내용 생성
 
-  // 영화 생성 쿼리
   /* istanbul ignore next */
   async createMovie(
     qr: QueryRunner,
@@ -143,7 +152,9 @@ export class MovieService {
       })
       .execute();
   }
-  // 영화 상세 내용 생성
+
+  // 영화 테이블과 장르 테이블 관계 형성
+
   /* istanbul ignore next */
   async createMovieDetail(
     qr: QueryRunner,
@@ -159,7 +170,8 @@ export class MovieService {
       .execute();
   }
 
-  // 영화 테이블과 장르 테이블 관계 형성
+  // 영화 파일 temp => movie 이동
+
   /* istanbul ignore next */
   async createMovieGenreRelation(
     qr: QueryRunner,
@@ -173,7 +185,8 @@ export class MovieService {
       .add(genres.map((genre) => genre.id));
   }
 
-  // 영화 파일 temp => movie 이동
+  // 영화 수정 쿼리
+
   /* istanbul ignore next */
   async renameMovieFile(createMovieDto: CreateMovieDto) {
     const movieFolder = join("public", "movie");
@@ -199,7 +212,8 @@ export class MovieService {
     }
   }
 
-  // 영화 수정 쿼리
+  // 영화 상세 수정
+
   /* istanbul ignore next */
   async updateMovie(
     qr: QueryRunner,
@@ -214,7 +228,8 @@ export class MovieService {
       .execute();
   }
 
-  // 영화 상세 수정
+  // 영화 <=> 장르 관계 수정
+
   /* istanbul ignore next */
   async updateMovieDetail(
     qr: QueryRunner,
@@ -231,7 +246,8 @@ export class MovieService {
       .execute();
   }
 
-  // 영화 <=> 장르 관계 수정
+  // 영화 삭제 쿼리
+
   /* istanbul ignore next */
   async updateMovieGenreRelation(
     qr: QueryRunner,
@@ -249,7 +265,8 @@ export class MovieService {
       );
   }
 
-  // 영화 삭제 쿼리
+  // 영화 상세 삭제 쿼리
+
   /* istanbul ignore next */
   async removeMovie(qr: QueryRunner, movieId: number) {
     await qr.manager
@@ -260,7 +277,8 @@ export class MovieService {
       .execute();
   }
 
-  // 영화 상세 삭제 쿼리
+  // 사용자가 좋아요한 영화 ,중간 테이블에서 조회
+
   /* istanbul ignore next */
   async removeMovieDetail(
     qr: QueryRunner,
@@ -272,6 +290,18 @@ export class MovieService {
       .from(MovieDetail)
       .where("id = :id", { id: movieDetailId })
       .execute();
+  }
+
+  /* istanbul ignore next */
+  async getMovieUserLikeRelation(
+    movieId: number,
+    userId: number,
+  ) {
+    return await this.movieUserLikeRepository
+      .createQueryBuilder("mul")
+      .where("mul.movieId = :movieId", { movieId })
+      .andWhere("mul.userId = :userId", { userId })
+      .getOne();
   }
 
   // 목록 조회(페이지네이션 및 검색)
@@ -632,27 +662,19 @@ export class MovieService {
     return director;
   }
 
-  async likeMovie(movieId: number, userId: number) {
-    return this.likeHandler(movieId, userId, "LIKE");
-  }
-
-  async dislikeMovie(movieId: number, userId: number) {
-    return this.likeHandler(movieId, userId, "DISLIKE");
-  }
-
+  /**
+   * 좋아요,싫어요 주요 로직 메서드
+   */
   async likeHandler(
     movieId: number,
     userId: number,
     likeStatus: "LIKE" | "DISLIKE",
-  ) {
+  ): Promise<LikeStatusReturnType> {
     const movie = await this.findOne(movieId);
     const user = await this.userService.findOne(userId);
 
-    const movieUserLike = await this.movieUserLikeRepository
-      .createQueryBuilder("mul")
-      .where("mul.movieId = :movieId", { movieId })
-      .andWhere("mul.userId = :userId", { userId })
-      .getOne();
+    const movieUserLike =
+      await this.getMovieUserLikeRelation(movieId, userId);
 
     const newLikeStatus = likeStatus === "LIKE";
     const currentLikeStatus = movieUserLike
@@ -680,16 +702,25 @@ export class MovieService {
       );
     }
 
-    const status = await this.movieUserLikeRepository
-      .createQueryBuilder("mul")
-      .where("mul.movieId = :movieId", { movieId })
-      .andWhere("mul.userId = :userId", { userId })
-      .getOne();
+    const updatedMovieUserLike =
+      await this.getMovieUserLikeRelation(movieId, userId);
 
     return {
       [likeStatus === "LIKE" ? "isLike" : "isDislike"]: !(
-        status === null
+        updatedMovieUserLike === null
       ),
     };
+  }
+
+  /* istanbul ignore next */
+  // likeHandler 유닛 테스트에서 테스트함
+  async likeMovie(movieId: number, userId: number) {
+    return this.likeHandler(movieId, userId, "LIKE");
+  }
+
+  /* istanbul ignore next */
+  // likeHandler 유닛 테스트에서 테스트함
+  async dislikeMovie(movieId: number, userId: number) {
+    return this.likeHandler(movieId, userId, "DISLIKE");
   }
 }

@@ -19,6 +19,7 @@ import { Director } from "../director/entities/director.entity";
 import { Genre } from "../genre/entities/genre.entity";
 import { CACHE_KEY } from "../shared/const/cache-key.const";
 import { SharedService } from "../shared/shared.service";
+import { User } from "../user/entities/user.entity";
 import { UserService } from "../user/user.service";
 import { CreateMovieDto } from "./dto/create-movie.dto";
 import { GetMovieDto } from "./dto/get-movie.dto";
@@ -1018,6 +1019,207 @@ describe("MovieService", () => {
       await expect(
         movieService.findDirector(directorId, qr),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  /**
+   * 좋아요,싫어요 주요 로직 메서드
+   */
+  describe("likeHandler", () => {
+    const movie = {
+      id: 1,
+      title: "어벤져스",
+    };
+
+    const movieId = 1;
+
+    const user = {
+      id: 1,
+      email: "test@test.com",
+    };
+
+    const userId = 1;
+    const mulBeforeUpdate = {
+      isLike: true,
+      movieId: 1,
+      userId: 1,
+    };
+
+    let mulAfterUpdate = {
+      isLike: true,
+      movieId: 1,
+      userId: 1,
+    };
+
+    let getMovieUserLikeRelationMock: jest.SpyInstance;
+    let saveMul: jest.SpyInstance;
+    let deleteMul: jest.SpyInstance;
+    let updateMul: jest.SpyInstance;
+    beforeEach(() => {
+      jest
+        .spyOn(movieService, "findOne")
+        .mockResolvedValue(movie as Movie);
+
+      jest
+        .spyOn(userService, "findOne")
+        .mockResolvedValue(user as User);
+
+      getMovieUserLikeRelationMock = jest.spyOn(
+        movieService,
+        "getMovieUserLikeRelation",
+      );
+
+      saveMul = jest.spyOn(movieUserLikeRepository, "save");
+      deleteMul = jest.spyOn(
+        movieUserLikeRepository,
+        "delete",
+      );
+      updateMul = jest.spyOn(
+        movieUserLikeRepository,
+        "update",
+      );
+    });
+
+    it("should update movie's like If the user has not liked the movie when user press movie's like button", async () => {
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        null,
+      );
+
+      saveMul.mockResolvedValue(undefined);
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulAfterUpdate,
+      );
+
+      const result = await movieService.likeHandler(
+        movieId,
+        userId,
+        "LIKE",
+      );
+
+      expect(result.isLike).toEqual(mulAfterUpdate.isLike);
+    });
+
+    it("should update movie's like If the user has liked the movie when user press movie's like button", async () => {
+      mulAfterUpdate = null;
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulBeforeUpdate,
+      );
+
+      deleteMul.mockResolvedValue(undefined);
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulAfterUpdate,
+      );
+
+      const result = await movieService.likeHandler(
+        movieId,
+        userId,
+        "LIKE",
+      );
+
+      expect(result.isLike).toEqual(false);
+    });
+
+    it("should update movie's like If the user has disliked the movie when user press movie's like button", async () => {
+      mulBeforeUpdate.isLike = false;
+
+      mulAfterUpdate = {
+        userId: 1,
+        movieId: 1,
+        isLike: true,
+      };
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulBeforeUpdate,
+      );
+
+      updateMul.mockResolvedValue(undefined);
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulAfterUpdate,
+      );
+
+      const result = await movieService.likeHandler(
+        movieId,
+        userId,
+        "LIKE",
+      );
+
+      expect(result.isLike).toEqual(true);
+    });
+
+    it("should update movie's dislike If the user has not disliked the movie when user press movie's dislike button", async () => {
+      mulBeforeUpdate.isLike = false;
+      mulAfterUpdate.isLike = false;
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        null,
+      );
+
+      saveMul.mockResolvedValue(undefined);
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulAfterUpdate,
+      );
+
+      const result = await movieService.likeHandler(
+        movieId,
+        userId,
+        "DISLIKE",
+      );
+
+      expect(result.isDislike).toEqual(true);
+    });
+
+    it("should update movie's dislike If the user has disliked the movie when user press movie's dislike button", async () => {
+      mulAfterUpdate = null;
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulBeforeUpdate,
+      );
+
+      deleteMul.mockResolvedValue(undefined);
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulAfterUpdate,
+      );
+
+      const result = await movieService.likeHandler(
+        movieId,
+        userId,
+        "DISLIKE",
+      );
+
+      expect(result.isDislike).toEqual(false);
+    });
+
+    it("should update movie's dislike If the user has liked the movie when user press movie's dislike button", async () => {
+      mulBeforeUpdate.isLike = true;
+
+      mulAfterUpdate = {
+        userId: 1,
+        movieId: 1,
+        isLike: false,
+      };
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulBeforeUpdate,
+      );
+
+      updateMul.mockResolvedValue(undefined);
+
+      getMovieUserLikeRelationMock.mockResolvedValueOnce(
+        mulAfterUpdate,
+      );
+
+      const result = await movieService.likeHandler(
+        movieId,
+        userId,
+        "DISLIKE",
+      );
+
+      expect(result.isDislike).toEqual(true);
     });
   });
 });
