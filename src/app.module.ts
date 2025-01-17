@@ -94,6 +94,9 @@ import { UserModule } from "./user/user.module";
           User,
         ],
         synchronize: true,
+        ssl: {
+          rejectUnauthorized: false,
+        },
         // logging: true,
       }),
 
