@@ -45,7 +45,7 @@ describe("MovieService", () => {
   let userService: jest.Mocked<UserService>;
   let cacheManager: Cache;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     // const module: TestingModule = await Test.createTestingModule({
     //   providers: [MovieService],
     // }).compile();
