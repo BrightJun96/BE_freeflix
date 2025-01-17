@@ -32,7 +32,7 @@ import { MovieDetail } from "./entities/movie-detail.entity";
 import { MovieUserLike } from "./entities/movie-user.like";
 import { Movie } from "./entities/movie.entity";
 
-interface LikeStatusReturnType {
+export interface LikeStatusReturnType {
   isLike?: boolean;
   isDislike?: boolean;
 }
