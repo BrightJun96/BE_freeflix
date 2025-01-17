@@ -11,7 +11,7 @@ import { Director } from "../director/entities/director.entity";
 import { Genre } from "../genre/entities/genre.entity";
 import { Role, User } from "../user/entities/user.entity";
 import { MovieDetail } from "./entities/movie-detail.entity";
-import { MovieUserLike } from "./entities/movie-user.like";
+import { MovieUserLike } from "./entities/movie-user-like.entity";
 import { Movie } from "./entities/movie.entity";
 
 describe("MovieController (e2e)", () => {

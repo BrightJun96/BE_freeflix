@@ -25,7 +25,7 @@ import { CreateMovieDto } from "./dto/create-movie.dto";
 import { GetMovieDto } from "./dto/get-movie.dto";
 import { UpdateMovieDto } from "./dto/update-movie.dto";
 import { MovieDetail } from "./entities/movie-detail.entity";
-import { MovieUserLike } from "./entities/movie-user.like";
+import { MovieUserLike } from "./entities/movie-user-like.entity";
 import { Movie } from "./entities/movie.entity";
 import { MovieService } from "./movie.service";
 
