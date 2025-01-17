@@ -45,8 +45,14 @@ import { UserModule } from "./user/user.module";
     ConfigModule.forRoot({
       // 어떤 파일에서든 process.env로 접근 가능토록 하는 설정
       isGlobal: true,
+      envFilePath:
+        process.env.NODE_ENV === "test"
+          ? "test.env"
+          : ".env",
       validationSchema: Joi.object({
-        ENV: Joi.string().valid("dev", "prod").required(),
+        ENV: Joi.string()
+          .valid("test", "dev", "prod")
+          .required(),
         DB_TYPE: Joi.string().valid("postgres").required(),
         DB_HOST: Joi.string().required(),
         DB_PORT: Joi.number().required(),
