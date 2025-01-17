@@ -195,7 +195,7 @@ describe("MovieService", () => {
       const result = await movieService.findAll(dto);
 
       expect(qb.where).toHaveBeenCalledWith(
-        "movie.title ILIKE :title",
+        "movie.title LIKE :title",
         {
           title: `%movie%`,
         },
@@ -263,7 +263,7 @@ describe("MovieService", () => {
       expect(getMoviesMock).toHaveBeenCalled();
 
       expect(qb.where).toHaveBeenCalledWith(
-        "movie.title ILIKE :title",
+        "movie.title LIKE :title",
         {
           title: "%Movie%",
         },
