@@ -356,7 +356,7 @@ export class MovieService {
 
     // qb.orderBy();
     if (title) {
-      qb.where("movie.title ILIKE :title", {
+      qb.where("movie.title LIKE :title", {
         title: `%${title}%`,
       });
     }
@@ -547,6 +547,12 @@ export class MovieService {
         id,
       },
     });
+
+    if (!movie) {
+      throw new NotFoundException(
+        "존재하지 않는 영화입니다.",
+      );
+    }
 
     const { detail, directorId, genreIds, ...movieRest } =
       updateMovieDto;
