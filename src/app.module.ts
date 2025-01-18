@@ -29,7 +29,7 @@ import { FileUploadModule } from "./file-upload/file-upload.module";
 import { Genre } from "./genre/entities/genre.entity";
 import { GenreModule } from "./genre/genre.module";
 import { MovieDetail } from "./movie/entities/movie-detail.entity";
-import { MovieUserLike } from "./movie/entities/movie-user.like";
+import { MovieUserLike } from "./movie/entities/movie-user-like.entity";
 import { Movie } from "./movie/entities/movie.entity";
 import { MovieModule } from "./movie/movie.module";
 import { envVariablesKeys } from "./shared/const/env.const";
@@ -93,10 +93,17 @@ import { UserModule } from "./user/user.module";
           Genre,
           User,
         ],
-        synchronize: true,
-        ssl: {
-          rejectUnauthorized: false,
-        },
+        synchronize:
+          configService.get<string>(
+            envVariablesKeys.ENV,
+          ) !== "prod",
+        ...(configService.get<string>(
+          envVariablesKeys.ENV,
+        ) === "prod" && {
+          ssl: {
+            rejectUnauthorized: false,
+          },
+        }),
         // logging: true,
       }),
 
