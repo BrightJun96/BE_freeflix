@@ -9,6 +9,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import { rename } from "node:fs/promises";
 
@@ -22,6 +23,7 @@ import {
 import { Director } from "../director/entities/director.entity";
 import { Genre } from "../genre/entities/genre.entity";
 import { CACHE_KEY } from "../shared/const/cache-key.const";
+import { envVariablesKeys } from "../shared/const/env.const";
 import { SharedService } from "../shared/shared.service";
 import { UserService } from "../user/user.service";
 import { Relations } from "./constant/relations";
@@ -54,6 +56,7 @@ export class MovieService {
     private readonly userService: UserService,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
+    private readonly configService: ConfigService,
   ) {}
 
   // 단순 영화 조회 => 테스트 커버리지 제외 => 단순 레포지터리 조회기 때문에 테스트하지 않아도됨.
@@ -189,25 +192,35 @@ export class MovieService {
 
   /* istanbul ignore next */
   async renameMovieFile(createMovieDto: CreateMovieDto) {
-    const movieFolder = join("public", "movie");
-    const tempFolder = join("public", "temp");
-    const tempFilePath = join(
-      process.cwd(),
-      tempFolder,
-      createMovieDto.movieFilePath,
-    );
-    const destinationPath = join(
-      process.cwd(),
-      movieFolder,
-      createMovieDto.movieFilePath,
-    );
+    if (
+      this.configService.get<string>(
+        envVariablesKeys.ENV,
+      ) !== "prod"
+    ) {
+      const movieFolder = join("public", "movie");
+      const tempFolder = join("public", "temp");
+      const tempFilePath = join(
+        process.cwd(),
+        tempFolder,
+        createMovieDto.movieFilePath,
+      );
+      const destinationPath = join(
+        process.cwd(),
+        movieFolder,
+        createMovieDto.movieFilePath,
+      );
 
-    try {
-      await rename(tempFilePath, destinationPath);
-    } catch (e) {
-      console.log(e);
-      throw new InternalServerErrorException(
-        "동영상 파일 이동 중 오류가 발생했습니다.",
+      try {
+        await rename(tempFilePath, destinationPath);
+      } catch (e) {
+        console.log(e);
+        throw new InternalServerErrorException(
+          "동영상 파일 이동 중 오류가 발생했습니다.",
+        );
+      }
+    } else {
+      return this.sharedService.saveToPermanentStorage(
+        createMovieDto.movieFilePath,
       );
     }
   }

@@ -26,6 +26,8 @@
     "test:movie": "jest --testPathPattern=src/movie --coverage --collectCoverageFrom=src/movie/**"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.731.1",
+    "@aws-sdk/s3-request-presigner": "^3.731.1",
     "@nestjs/cache-manager": "^2.2.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.3.0",
@@ -39,6 +41,7 @@
     "@nestjs/swagger": "^8.1.1",
     "@nestjs/typeorm": "^10.0.2",
     "@types/multer": "^1.4.12",
+    "aws-sdk": "^2.1692.0",
     "bcrypt": "^5.1.1",
     "cache-manager": "^5.7.6",
     "class-transformer": "^0.5.1",
