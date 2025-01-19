@@ -47,6 +47,14 @@ export class ChatGateway
           token,
           secret,
         );
+
+      const user = client.data.user;
+
+      this.chatService.registerClient(user.sub, client);
+      await this.chatService.joinUserRooms(
+        user.sub,
+        client,
+      );
     } catch (e) {
       console.error(e);
       client.disconnect();
@@ -54,7 +62,11 @@ export class ChatGateway
   }
 
   handleDisconnect(client: Socket) {
-    return;
+    const user = client.data.user;
+
+    if (user) {
+      this.chatService.removeClient(user.sub);
+    }
   }
 
   @SubscribeMessage("receiveMessage")
