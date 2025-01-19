@@ -55,7 +55,11 @@ export class Movie extends BaseTable {
   detail: MovieDetail;
 
   @Column()
-  @Transform(({ value }) => `${DOMAIN_URL}/${value}`)
+  @Transform(({ value }) =>
+    process.env.ENV === "prod"
+      ? `http://${process.env.BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${value}`
+      : `${DOMAIN_URL}/${value}`,
+  )
   movieFilePath: string;
 
   @ManyToOne(() => Director, (director) => director.id, {
