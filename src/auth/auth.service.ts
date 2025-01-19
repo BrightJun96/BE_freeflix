@@ -6,6 +6,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  UnauthorizedException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
@@ -180,5 +181,81 @@ export class AuthService {
         "리프래쉬 토큰이 아닙니다.",
       );
     }
+  }
+
+  parseBearerToken(rawToken: string) {
+    const bearerSplit = rawToken.split(" ");
+
+    if (bearerSplit.length !== 2) {
+      throw new BadRequestException(
+        "토큰 포맷이 잘못되었습니다.",
+      );
+    }
+
+    const [BEARER, token] = bearerSplit;
+
+    if (BEARER.toLowerCase() !== "bearer") {
+      throw new BadRequestException(
+        "토큰 포맷이 잘못되었습니다.",
+      );
+    }
+
+    return token;
+  }
+
+  // 토큰 검증 및 request에 user 저장
+  async verifyBearerToken(token: string, secret: string) {
+    try {
+      const cache = await this.cacheManager.get(
+        CACHE_KEY.TOKEN(token),
+      );
+      if (cache) {
+        return cache;
+      }
+      const tokenInfo = await this.jwtService.verifyAsync(
+        token,
+        {
+          secret,
+        },
+      );
+
+      // await this.setTokenCache(token, tokenInfo);
+
+      return tokenInfo;
+    } catch (e) {
+      throw new UnauthorizedException(
+        "토큰이 만료되었습니다.",
+      );
+    }
+  }
+
+  validateTokenType(token: string) {
+    try {
+      const decodedPayload = this.jwtService.decode(token);
+
+      if (!decodedPayload) {
+        throw new BadRequestException("잘못된 토큰입니다.");
+      }
+
+      if (
+        decodedPayload.type !== "access" &&
+        decodedPayload.type !== "refresh"
+      ) {
+        throw new BadRequestException("잘못된 토큰입니다.");
+      }
+
+      return decodedPayload.type;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  // token secret 조회
+  getTokenSecret(tokenType: string) {
+    return this.configService.get<string>(
+      tokenType === "refresh"
+        ? envVariablesKeys.REFRESH_TOKEN_SECRET
+        : envVariablesKeys.ACCESS_TOKEN_SECRET,
+    );
   }
 }

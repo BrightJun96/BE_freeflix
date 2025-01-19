@@ -2,9 +2,12 @@ import { Exclude } from "class-transformer";
 import {
   Column,
   Entity,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
+import { ChatRoom } from "../../chat/entities/chat-room.entity";
+import { Chat } from "../../chat/entities/chat.entity";
 import { MovieUserLike } from "../../movie/entities/movie-user-like.entity";
 import { Movie } from "../../movie/entities/movie.entity";
 import { BaseTable } from "../../shared/entity/base-table";
@@ -42,4 +45,10 @@ export class User extends BaseTable {
 
   @OneToMany(() => MovieUserLike, (mul) => mul.user)
   likedUsers: MovieUserLike[];
+
+  @OneToMany(() => Chat, (chat) => chat.author)
+  chats: Chat[];
+
+  @ManyToMany(() => ChatRoom, (chatRoom) => chatRoom.users)
+  chatRooms: ChatRoom[];
 }

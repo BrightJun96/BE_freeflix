@@ -23,6 +23,9 @@ import { AuthModule } from "./auth/auth.module";
 import { AuthGuard } from "./auth/guard/auth.guard";
 import { RbacGuard } from "./auth/guard/rbac.guard";
 import { BearerTokenMiddleware } from "./auth/middleware/bearer-token.middleware";
+import { ChatModule } from "./chat/chat.module";
+import { ChatRoom } from "./chat/entities/chat-room.entity";
+import { Chat } from "./chat/entities/chat.entity";
 import { DirectorModule } from "./director/director.module";
 import { Director } from "./director/entities/director.entity";
 import { FileUploadModule } from "./file-upload/file-upload.module";
@@ -96,6 +99,8 @@ import { UserModule } from "./user/user.module";
           Director,
           Genre,
           User,
+          Chat,
+          ChatRoom,
         ],
         synchronize:
           configService.get<string>(
@@ -128,6 +133,7 @@ import { UserModule } from "./user/user.module";
       isGlobal: true,
     }),
     ScheduleModule.forRoot(),
+    ChatModule,
   ],
   providers: [
     {
