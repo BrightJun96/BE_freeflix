@@ -1,13 +1,15 @@
 import {
+  ObjectCannedACL,
+  PutObjectCommand,
+  S3,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-
-import * as AWS from "aws-sdk";
-// import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-// import { PutObjectCommand, S3 } from "@aws-sdk/client-s3";
 import { SelectQueryBuilder } from "typeorm";
 import { v4 as Uuid } from "uuid";
 import { envVariablesKeys } from "./const/env.const";
@@ -20,23 +22,6 @@ export class SharedService {
   constructor(
     private readonly configService: ConfigService,
   ) {
-    // JS SDK v3 does not support global configuration.
-    // Codemod has attempted to pass values to each service client in this file.
-    // You may need to update clients outside of this file, if they use global config.
-    AWS.config.update({
-      credentials: {
-        accessKeyId: configService.get<string>(
-          envVariablesKeys.AWS_ACCESS_KEY_ID,
-        ),
-        secretAccessKey: configService.get<string>(
-          envVariablesKeys.AWS_SECRET_ACCESS_KEY,
-        ),
-      },
-      region: configService.get<string>(
-        envVariablesKeys.AWS_REGION,
-      ),
-    });
-
     this.s3 = new S3({
       credentials: {
         accessKeyId: configService.get<string>(
@@ -84,8 +69,7 @@ export class SharedService {
         envVariablesKeys.BUCKET_NAME,
       ),
       Key: `public/temp/${Uuid()}.mp4`,
-      Expires: expiresIn,
-      ACL: "public-read",
+      ACL: ObjectCannedACL.public_read,
     };
 
     try {
@@ -93,8 +77,7 @@ export class SharedService {
         this.s3,
         new PutObjectCommand(params),
         {
-          expiresIn:
-            "/* add value from 'Expires' from v2 call if present, else remove */",
+          expiresIn,
         },
       );
     } catch (e) {
