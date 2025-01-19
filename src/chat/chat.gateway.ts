@@ -1,4 +1,7 @@
-import { UnauthorizedException } from "@nestjs/common";
+import {
+  UnauthorizedException,
+  UseInterceptors,
+} from "@nestjs/common";
 import {
   ConnectedSocket,
   MessageBody,
@@ -8,8 +11,12 @@ import {
   WebSocketGateway,
 } from "@nestjs/websockets";
 import { Socket } from "socket.io";
+import { QueryRunner } from "typeorm";
 import { AuthService } from "../auth/auth.service";
+import { WsQueryRunner } from "../shared/decorator/ws-query-runner.decorator";
+import { WsTransactionInterceptor } from "../shared/interceptor/ws-transaction.interceptor";
 import { ChatService } from "./chat.service";
+import { CreateChatDto } from "./dto/create-chat.dto";
 
 @WebSocketGateway()
 export class ChatGateway
@@ -80,13 +87,21 @@ export class ChatGateway
   }
 
   @SubscribeMessage("sendMessage")
+  @UseInterceptors(WsTransactionInterceptor)
   async sendMessage(
-    @MessageBody() data: { message: string },
+    @MessageBody() createChatDto: CreateChatDto,
     @ConnectedSocket() client: Socket,
+    @WsQueryRunner() qr: QueryRunner,
   ) {
-    client.emit("sendMessage", {
-      ...data,
-      from: "server",
-    });
+    const payload = client.data.user;
+    return this.chatService.createMessage(
+      payload.sub,
+      createChatDto,
+      qr,
+    );
+    // client.emit("sendMessage", {
+    //   ...data,
+    //   from: "server",
+    // });
   }
 }
