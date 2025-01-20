@@ -72,7 +72,6 @@ export class MovieController {
   ) {
     const session = req.session;
 
-    console.log("session :", session);
     const movieCount = session.movieCount ?? {};
 
     req.session.movieCount = {
