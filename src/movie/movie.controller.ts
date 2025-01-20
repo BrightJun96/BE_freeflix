@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Query,
+  Request,
   UseInterceptors,
 } from "@nestjs/common";
 import {
@@ -67,7 +68,17 @@ export class MovieController {
   getMovie(
     @Param("id", ParseIntPipe, PositiveIntPipe)
     id: number,
+    @Request() req: any,
   ) {
+    const session = req.session;
+
+    console.log("session :", session);
+    const movieCount = session.movieCount ?? {};
+
+    req.session.movieCount = {
+      ...movieCount,
+      [id]: movieCount[id] ? movieCount[id] + 1 : 1,
+    };
     return this.movieService.findOne(id);
   }
 

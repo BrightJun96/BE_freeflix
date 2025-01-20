@@ -5,6 +5,7 @@ import {
   DocumentBuilder,
   SwaggerModule,
 } from "@nestjs/swagger";
+import * as session from "express-session";
 import * as ffprobe from "ffprobe-static";
 import * as ffmpegFluent from "fluent-ffmpeg";
 import { AppModule } from "./app.module";
@@ -42,6 +43,9 @@ async function bootstrap() {
       },
     }),
   );
+
+  app.use(session({ secret: process.env.SESSION_SECRET }));
+
   await app.listen(process.env.PORT || 3000);
 }
 bootstrap();
