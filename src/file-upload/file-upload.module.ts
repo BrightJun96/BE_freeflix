@@ -1,3 +1,4 @@
+import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
 import { MulterModule } from "@nestjs/platform-express";
 import e from "express";
@@ -37,6 +38,17 @@ import { FileUploadService } from "./file-upload.service";
           );
         },
       }),
+    }),
+    BullModule.forRoot({
+      connection: {
+        host: "redis-19000.c340.ap-northeast-2-1.ec2.redns.redis-cloud.com",
+        port: 19000,
+        username: "default",
+        password: "kHosdhpR9r5inhZxOoBzyhx6Q5Ky0EH5",
+      },
+    }),
+    BullModule.registerQueue({
+      name: "thumbnail-generation",
     }),
   ],
 })

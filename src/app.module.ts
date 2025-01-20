@@ -6,6 +6,7 @@ import {
   RequestMethod,
 } from "@nestjs/common";
 import {
+  ConditionalModule,
   ConfigModule,
   ConfigService,
 } from "@nestjs/config";
@@ -41,6 +42,7 @@ import { ResponseTimeInterceptor } from "./shared/interceptor/response-time.inte
 import { ThrottleInterceptor } from "./shared/interceptor/throttle.interceptor";
 import { User } from "./user/entities/user.entity";
 import { UserModule } from "./user/user.module";
+import { WorkerModule } from "./worker/worker.module";
 
 @Module({
   imports: [
@@ -134,6 +136,10 @@ import { UserModule } from "./user/user.module";
     }),
     ScheduleModule.forRoot(),
     ChatModule,
+    ConditionalModule.registerWhen(
+      WorkerModule,
+      (env: NodeJS.ProcessEnv) => env["TYPE"] === "worker",
+    ),
   ],
   providers: [
     {

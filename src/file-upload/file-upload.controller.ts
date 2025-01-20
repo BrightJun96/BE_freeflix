@@ -1,3 +1,4 @@
+import { InjectQueue } from "@nestjs/bullmq";
 import {
   BadRequestException,
   Controller,
@@ -11,6 +12,7 @@ import {
   ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
+import { Queue } from "bullmq";
 import { MIME_TYPE } from "../movie/constant/mime-type";
 import { FileUploadService } from "./file-upload.service";
 
@@ -20,6 +22,8 @@ import { FileUploadService } from "./file-upload.service";
 export class FileUploadController {
   constructor(
     private readonly fileUploadService: FileUploadService,
+    @InjectQueue("thumbnail-generation")
+    private readonly thumbnailQueue: Queue,
   ) {}
 
   @Post()
@@ -62,7 +66,11 @@ export class FileUploadController {
       },
     }),
   )
-  create(@UploadedFile() file: Express.Multer.File) {
+  async create(@UploadedFile() file: Express.Multer.File) {
+    await this.thumbnailQueue.add("thumbnail", {
+      videoId: file.filename,
+      videoPath: file.path,
+    });
     return {
       fileName: file.filename,
     };
