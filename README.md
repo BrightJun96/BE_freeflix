@@ -39,6 +39,9 @@ $ pnpm install
 ## Compile and run the project
 
 ```bash
+#도커 사용시(로컬 DB 따로 구성하지 않아도 됨.)
+$ docker compose up --build
+
 # development
 $ pnpm run start
 
