@@ -1,7 +1,7 @@
 const ENV = "ENV";
 const DB_TYPE = "DB_TYPE";
 const DB_HOST = "DB_HOST";
-
+const DB_URL = "DB_URL";
 const DB_PORT = "DB_PORT";
 const DB_USERNAME = "DB_USERNAME";
 const DB_PASSWORD = "DB_PASSWORD";
@@ -18,6 +18,7 @@ const BUCKET_NAME = "BUCKET_NAME";
 export const envVariablesKeys = {
   ENV,
   DB_TYPE,
+  DB_URL,
   DB_HOST,
   DB_PORT,
   DB_USERNAME,
