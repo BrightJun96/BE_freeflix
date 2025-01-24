@@ -24,4 +24,4 @@ jobs:
 
       - name: Build And Push Docker Image
         run: |
-          docker buildx build --platform linux/amd64,linux/arm64 -t jjalseu/devlounge:latest --push -f ./Dockerfile --target production .
+          docker buildx build --platform linux/amd64,linux/arm64 -t jjalseu/devlounge:latest -t jjalseu/devlounge:${{github.sha}} --push -f ./Dockerfile --target production .
