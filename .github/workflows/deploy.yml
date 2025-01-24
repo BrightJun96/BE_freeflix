@@ -25,3 +25,22 @@ jobs:
       - name: Build And Push Docker Image
         run: |
           docker buildx build --platform linux/amd64,linux/arm64 -t jjalseu/devlounge:latest -t jjalseu/devlounge:${{github.sha}} --push -f ./Dockerfile --target production .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy application
+        run: |
+          aws ssm send-command \
+          --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
+          --document-name "AWS-RunShellScript" \
+          --parameters '{"commands":[
+              "cd devlouge-app",
+              "sudo docker stop devlounge-container || true",
+              "sudo docker rm devlounge-container || true",
+              "sudo docker run --name devlounge-container --env-file .env -d -p 3000:3000 jjalseu/devlounge:latest"]}' \
+          --region ${{ secrets.AWS_REGION }}
