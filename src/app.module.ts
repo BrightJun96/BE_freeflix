@@ -51,9 +51,10 @@ import { WorkerModule } from "./worker/worker.module";
       // 어떤 파일에서든 process.env로 접근 가능토록 하는 설정
       isGlobal: true,
       envFilePath:
-        process.env.NODE_ENV === "test"
-          ? "test.env"
-          : ".env",
+        // process.env.NODE_ENV === "test"
+        //   ? "test.env"
+        //   :
+        ".env",
       validationSchema: Joi.object({
         ENV: Joi.string()
           .valid("test", "dev", "prod")
