@@ -36,11 +36,10 @@ jobs:
       - name: Deploy application
         run: |
           aws ssm send-command \
-          --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
+          --instance-ids "i-07b3e922cca70a01c" \
           --document-name "AWS-RunShellScript" \
           --parameters '{"commands":[
               "cd devlouge-app",
               "sudo docker stop devlounge-container || true",
               "sudo docker rm devlounge-container || true",
               "sudo docker run --name devlounge-container --env-file .env -d -p 3000:3000 jjalseu/devlounge:latest"]}' \
-          --region ${{ secrets.AWS_REGION }}
