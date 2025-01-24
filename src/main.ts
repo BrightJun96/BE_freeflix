@@ -16,8 +16,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
-    .setTitle("freeflix API")
-    .setDescription("freeflix API 문서")
+    .setTitle("Dev-Lounge API")
+    .setDescription("Dev-Lounge API 문서")
     .setVersion("1.0")
     .addBasicAuth()
     .addBearerAuth()
