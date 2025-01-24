@@ -77,9 +77,6 @@ import { WorkerModule } from "./worker/worker.module";
     // TypeORM 설정
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
-        // url: configService.get<string>(
-        //   envVariablesKeys.DB_URL,
-        // ),
         type: configService.get<string>(
           envVariablesKeys.DB_TYPE,
         ) as "postgres",
