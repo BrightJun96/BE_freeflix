@@ -14,6 +14,15 @@ ffmpegFluent.setFfmpegPath(ffmpeg.path);
 ffmpegFluent.setFfprobePath(ffprobe.path);
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: [
+      "https://thedevlounge.com",
+      "http://localhost:3000",
+    ],
+    credentials: true,
+    //PROD
+    // origin: * ,//PROD
+  });
 
   const config = new DocumentBuilder()
     .setTitle("Dev-Lounge API")
@@ -46,6 +55,6 @@ async function bootstrap() {
 
   app.use(session({ secret: process.env.SESSION_SECRET }));
 
-  await app.listen(process.env.PORT || 3000);
+  await app.listen(process.env.PORT || 8080);
 }
 bootstrap();
