@@ -1,0 +1,9 @@
+version: "3.1"
+
+services:
+  app:
+    image: jjalseu/devlounge
+    env_file:
+      - .env
+    ports:
+      - 3000:3000
