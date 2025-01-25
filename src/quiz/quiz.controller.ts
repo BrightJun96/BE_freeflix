@@ -20,11 +20,17 @@ import { CheckAnswerDto } from "./dto/check-answer.dto";
 import { CreateQuizDto } from "./dto/create-quiz.dto";
 import { GetQuizListDto } from "./dto/get-quiz-list.dto";
 import { UpdateQuizDto } from "./dto/update-quiz.dto";
-import { QuizService } from "./quiz.service";
+import { CreateQuizService } from "./service/create-quiz.service";
+import { QuizService } from "./service/quiz.service";
+import { UpdateQuizService } from "./service/update-quiz.service";
 
 @Controller("quiz")
 export class QuizController {
-  constructor(private readonly quizService: QuizService) {}
+  constructor(
+    private readonly quizService: QuizService,
+    private readonly createQuizService: CreateQuizService,
+    private readonly updateQuizService: UpdateQuizService,
+  ) {}
 
   /**
    * ------------------------------
@@ -88,7 +94,7 @@ export class QuizController {
     @Body() createQuizDto: CreateQuizDto,
     @QueryRunner() qr: QR,
   ) {
-    return this.quizService.create(createQuizDto, qr);
+    return this.createQuizService.create(createQuizDto, qr);
   }
 
   /**
@@ -102,7 +108,11 @@ export class QuizController {
     @Body() updateQuizDto: UpdateQuizDto,
     @QueryRunner() qr: QR,
   ) {
-    return this.quizService.update(id, updateQuizDto, qr);
+    return this.updateQuizService.update(
+      id,
+      updateQuizDto,
+      qr,
+    );
   }
 
   /**
