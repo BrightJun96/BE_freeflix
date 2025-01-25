@@ -21,6 +21,7 @@ import { CreateQuizDto } from "./dto/create-quiz.dto";
 import { GetQuizListDto } from "./dto/get-quiz-list.dto";
 import { UpdateQuizDto } from "./dto/update-quiz.dto";
 import { CreateQuizService } from "./service/create-quiz.service";
+import { QuizListService } from "./service/quiz-list.service";
 import { QuizService } from "./service/quiz.service";
 import { UpdateQuizService } from "./service/update-quiz.service";
 
@@ -30,6 +31,7 @@ export class QuizController {
     private readonly quizService: QuizService,
     private readonly createQuizService: CreateQuizService,
     private readonly updateQuizService: UpdateQuizService,
+    private readonly quizListService: QuizListService,
   ) {}
 
   /**
@@ -81,7 +83,9 @@ export class QuizController {
   @Get()
   @RBAC(Role.admin)
   async findAll(@Query() getQuizListDto: GetQuizListDto) {
-    return await this.quizService.findAll(getQuizListDto);
+    return await this.quizListService.findAll(
+      getQuizListDto,
+    );
   }
 
   /**

@@ -6,6 +6,7 @@ import { QuizMetaData } from "./entities/quiz-meta-data.entity";
 import { Quiz } from "./entities/quiz.entity";
 import { QuizController } from "./quiz.controller";
 import { CreateQuizService } from "./service/create-quiz.service";
+import { QuizListService } from "./service/quiz-list.service";
 import { QuizService } from "./service/quiz.service";
 import { UpdateQuizService } from "./service/update-quiz.service";
 
@@ -21,6 +22,7 @@ import { UpdateQuizService } from "./service/update-quiz.service";
   controllers: [QuizController],
   providers: [
     QuizService,
+    QuizListService,
     CreateQuizService,
     UpdateQuizService,
   ],
