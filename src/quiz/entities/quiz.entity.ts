@@ -57,6 +57,9 @@ export class Quiz extends BaseTable {
   @OneToOne(
     () => QuizMetaData,
     (quizMetaData) => quizMetaData.id,
+    {
+      cascade: true,
+    },
   )
   @JoinColumn()
   quizMetaData: QuizMetaData;
@@ -64,6 +67,9 @@ export class Quiz extends BaseTable {
   @OneToMany(
     () => MultipleChoice,
     (multipleChoice) => multipleChoice.quiz,
+    {
+      cascade: true,
+    },
   )
   multipleChoices: MultipleChoice[];
 }

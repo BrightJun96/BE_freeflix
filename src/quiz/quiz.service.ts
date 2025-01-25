@@ -124,6 +124,6 @@ export class QuizService {
   }
 
   remove(id: number) {
-    return `This action removes a #${id} quiz`;
+    return this.quizRepository.delete(id);
   }
 }

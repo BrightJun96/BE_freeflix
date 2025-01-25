@@ -23,6 +23,8 @@ export class MultipleChoice {
   })
   order: string;
 
-  @ManyToOne(() => Quiz, (quiz) => quiz.id)
+  @ManyToOne(() => Quiz, (quiz) => quiz.id, {
+    onDelete: "CASCADE",
+  })
   quiz: Quiz;
 }

@@ -29,6 +29,8 @@ export class QuizMetaData {
   })
   metaImageUrl: string;
 
-  @OneToOne(() => Quiz, (quiz) => quiz.id)
+  @OneToOne(() => Quiz, (quiz) => quiz.id, {
+    onDelete: "CASCADE",
+  })
   quiz: Quiz;
 }
