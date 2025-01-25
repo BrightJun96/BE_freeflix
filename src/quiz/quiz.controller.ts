@@ -42,6 +42,15 @@ export class QuizController {
   }
 
   /**
+   * 퀴즈 URL 목록
+   */
+  @Get("detail-urls")
+  @Public()
+  async findDetailUrls() {
+    return await this.quizService.findDetailUrls();
+  }
+
+  /**
    * 정답 확인
    */
   @Post("check-answer")

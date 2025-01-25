@@ -395,4 +395,15 @@ export class QuizService {
       removeStatus: true,
     };
   }
+
+  /**
+   * 퀴즈 URL 목록
+   */
+  async findDetailUrls() {
+    return await this.quizRepository
+      .createQueryBuilder("quiz")
+      .select(["quiz.detailUrl"])
+      .orderBy("RANDOM()") // PostgreSQL에서는 RANDOM(), MySQL에서는 RAND() 사용
+      .getMany();
+  }
 }
