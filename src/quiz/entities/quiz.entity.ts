@@ -10,7 +10,7 @@ import { BaseTable } from "../../shared/entity/base-table";
 import { MultipleChoice } from "./multiple-choice.entity";
 import { QuizMetaData } from "./quiz-meta-data.entity";
 
-enum Field {
+export enum Field {
   FrontEnd = "FRONTEND",
   BackEnd = "BACKEND",
   Database = "DATABASE",

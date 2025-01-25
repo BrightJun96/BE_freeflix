@@ -36,6 +36,10 @@ import { MovieDetail } from "./movie/entities/movie-detail.entity";
 import { MovieUserLike } from "./movie/entities/movie-user-like.entity";
 import { Movie } from "./movie/entities/movie.entity";
 import { MovieModule } from "./movie/movie.module";
+import { MultipleChoice } from "./quiz/entities/multiple-choice.entity";
+import { QuizMetaData } from "./quiz/entities/quiz-meta-data.entity";
+import { Quiz } from "./quiz/entities/quiz.entity";
+import { QuizModule } from "./quiz/quiz.module";
 import { envVariablesKeys } from "./shared/const/env.const";
 import { QueryFailedFilter } from "./shared/filter/query-failed.filter";
 import { ResponseTimeInterceptor } from "./shared/interceptor/response-time.interceptor";
@@ -43,7 +47,6 @@ import { ThrottleInterceptor } from "./shared/interceptor/throttle.interceptor";
 import { User } from "./user/entities/user.entity";
 import { UserModule } from "./user/user.module";
 import { WorkerModule } from "./worker/worker.module";
-import { QuizModule } from './quiz/quiz.module';
 
 @Module({
   imports: [
@@ -105,6 +108,9 @@ import { QuizModule } from './quiz/quiz.module';
           User,
           Chat,
           ChatRoom,
+          Quiz,
+          QuizMetaData,
+          MultipleChoice,
         ],
         synchronize: true,
         // ssl: {
@@ -120,7 +126,7 @@ import { QuizModule } from './quiz/quiz.module';
         //     rejectUnauthorized: false,
         //   },
         // }),
-        // logging: true,
+        logging: true,
       }),
 
       inject: [ConfigService],
@@ -135,6 +141,7 @@ import { QuizModule } from './quiz/quiz.module';
     AuthModule,
     UserModule,
     FileUploadModule,
+    QuizModule,
     CacheModule.register({
       ttl: 0,
       isGlobal: true,
@@ -145,7 +152,6 @@ import { QuizModule } from './quiz/quiz.module';
       WorkerModule,
       (env: NodeJS.ProcessEnv) => env["TYPE"] === "worker",
     ),
-    QuizModule,
   ],
   providers: [
     {

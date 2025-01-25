@@ -25,6 +25,7 @@ export class QuizMetaData {
 
   @Column({
     comment: "퀴즈 제목-프론트 imageUrl에 사용",
+    nullable: true,
   })
   metaImageUrl: string;
 
