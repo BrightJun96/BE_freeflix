@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { QueryRunner, Repository } from "typeorm";
+import { Relations } from "../shared/const/relation.const";
 import { CreateMultipleChoiceDto } from "./dto/create-multiple-choice.dto";
 import { CreateQuizMetaDataDto } from "./dto/create-quiz-meta-data.dto";
 import { CreateQuizDto } from "./dto/create-quiz.dto";
@@ -20,41 +21,58 @@ export class QuizService {
     private readonly multipleChoiceRepository: Repository<MultipleChoice>,
   ) {}
 
-  async create(createQuizDto: CreateQuizDto) {
+  async create(
+    createQuizDto: CreateQuizDto,
+    qr: QueryRunner,
+  ) {
     const quizMetaData = await this.createQuizMetaData(
       createQuizDto.quizMetaData,
+      qr,
     );
 
-    const quiz = await this.quizRepository.save({
-      title: createQuizDto.title,
-      content: createQuizDto.content,
-      explanation: createQuizDto.explanation,
-      detailUrl: createQuizDto.detailUrl,
-      field: createQuizDto.field,
-      answer: createQuizDto.answer,
-      quizMetaData: {
-        id: quizMetaData.id,
+    const metaDataId = quizMetaData.identifiers[0].id;
+
+    const quiz = await this.createQuiz(
+      createQuizDto,
+      metaDataId,
+      qr,
+    );
+
+    const quizId = quiz.identifiers[0].id;
+
+    await this.createMultipleChoices(
+      createQuizDto.multipleChoices,
+      quizId,
+      qr,
+    );
+
+    return qr.manager.findOne(Quiz, {
+      relations: [
+        Relations.QUIZ.META,
+        Relations.QUIZ.MULTIPLE,
+      ],
+      where: {
+        id: quizId,
       },
     });
-
-    const multipleChoices =
-      await this.createMultipleChoices(
-        createQuizDto.multipleChoices,
-        quiz.id,
-      );
-
-    return { ...quiz, multipleChoices };
   }
 
   async createQuizMetaData(
     metaData: CreateQuizMetaDataDto,
+    qr: QueryRunner,
   ) {
-    return await this.quizMetaDataRepository.save(metaData);
+    return await qr.manager
+      .createQueryBuilder()
+      .insert()
+      .into(QuizMetaData)
+      .values(metaData)
+      .execute();
   }
 
   async createMultipleChoices(
     multipleChoicesDto: CreateMultipleChoiceDto[],
     quizId: number,
+    qr: QueryRunner,
   ) {
     // 각 DTO에 quiz 관계 추가
     const choicesWithQuiz = multipleChoicesDto.map(
@@ -64,9 +82,33 @@ export class QuizService {
       }),
     );
 
-    return await this.multipleChoiceRepository.save(
-      choicesWithQuiz,
-    );
+    return await qr.manager
+      .createQueryBuilder()
+      .insert()
+      .into(MultipleChoice)
+      .values(choicesWithQuiz)
+      .execute();
+  }
+
+  async createQuiz(
+    createQuizDto: CreateQuizDto,
+    metaDataId: number,
+    qr: QueryRunner,
+  ) {
+    return await qr.manager
+      .createQueryBuilder()
+      .insert()
+      .into(Quiz)
+      .values({
+        title: createQuizDto.title,
+        content: createQuizDto.content,
+        explanation: createQuizDto.explanation,
+        detailUrl: createQuizDto.detailUrl,
+        field: createQuizDto.field,
+        answer: createQuizDto.answer,
+        quizMetaData: { id: metaDataId },
+      })
+      .execute();
   }
 
   findAll() {
