@@ -10,6 +10,7 @@ import {
   UseInterceptors,
 } from "@nestjs/common";
 import { QueryRunner as QR } from "typeorm/query-runner/QueryRunner";
+import { Public } from "../auth/decorator/public.decorator";
 import { RBAC } from "../auth/decorator/rbac.decorator";
 import { QueryRunner } from "../shared/decorator/query-runner.decorator";
 import { TransactionInterceptor } from "../shared/interceptor/transaction.interceptor";
@@ -30,19 +31,16 @@ export class QuizController {
    */
 
   @Get()
+  @Public()
   findAll() {
     return this.quizService.findAll();
-  }
-
-  @Get(":id")
-  async findOneById(@Param("id", ParseIntPipe) id: number) {
-    return await this.quizService.findOneById(id);
   }
 
   /**
    * 퀴즈 상세 - URL
    */
   @Get("url/:detailUrl")
+  @Public()
   async findOneByUrl(@Param("detailUrl") url: string) {
     return await this.quizService.findOneByUrl(url);
   }
@@ -51,20 +49,13 @@ export class QuizController {
    * 정답 확인
    */
   @Post("check-answer")
+  @Public()
   async checkAnswer(
     @Body() checkAnswerDto: CheckAnswerDto,
   ) {
     return await this.quizService.checkAnswer(
       checkAnswerDto,
     );
-  }
-
-  @Patch(":id")
-  update(
-    @Param("id") id: string,
-    @Body() updateQuizDto: UpdateQuizDto,
-  ) {
-    return this.quizService.update(+id, updateQuizDto);
   }
 
   /**
@@ -86,17 +77,33 @@ export class QuizController {
   }
 
   /**
+   * 수정
+   */
+  @Patch(":id")
+  @RBAC(Role.admin)
+  @UseInterceptors(TransactionInterceptor)
+  update(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() updateQuizDto: UpdateQuizDto,
+    @QueryRunner() qr: QR,
+  ) {
+    return this.quizService.update(id, updateQuizDto, qr);
+  }
+
+  /**
+   * 퀴즈 상세
+   */
+  @Get(":id")
+  @RBAC(Role.admin)
+  async findOneById(@Param("id", ParseIntPipe) id: number) {
+    return await this.quizService.findOneById(id);
+  }
+  /**
    * 퀴즈 삭제
    */
   @Delete(":id")
   @RBAC(Role.admin)
   async remove(@Param("id", ParseIntPipe) id: number) {
-    await this.findOneById(id);
-
-    await this.quizService.remove(id);
-
-    return {
-      removeStatus: true,
-    };
+    return await this.quizService.remove(id);
   }
 }

@@ -206,11 +206,83 @@ export class QuizService {
 
   /**
    * 퀴즈 수정
-   * @param id
-   * @param updateQuizDto
    */
-  update(id: number, updateQuizDto: UpdateQuizDto) {
-    return `This action updates a #${id} quiz`;
+  async update(
+    id: number,
+    updateQuizDto: UpdateQuizDto,
+    qr: QueryRunner,
+  ) {
+    const quiz = await this.findOneById(id);
+
+    if (updateQuizDto.quizMetaData) {
+      await qr.manager
+        .createQueryBuilder()
+        .update(QuizMetaData)
+        .set(updateQuizDto.quizMetaData)
+        .where("id=:id", {
+          id: quiz.quizMetaData.id,
+        })
+        .execute();
+    }
+
+    if (updateQuizDto.multipleChoices) {
+      const ids = updateQuizDto.multipleChoices.map(
+        (choice) => choice.id,
+      ); // 업데이트할 ID 추출
+
+      const contentCase = updateQuizDto.multipleChoices
+        .map((choice) =>
+          choice.content
+            ? `WHEN id = ${choice.id} THEN '${choice.content}'`
+            : "",
+        )
+        .join(" ");
+      const orderCase = updateQuizDto.multipleChoices
+        .map((choice) =>
+          choice.order
+            ? `WHEN id = ${choice.id} THEN '${choice.order}'`
+            : "",
+        )
+        .join(" ");
+
+      await qr.manager
+        .createQueryBuilder()
+        .update(MultipleChoice)
+        .set({
+          content: () =>
+            `CASE ${contentCase} ELSE content END`,
+          order: () => `CASE ${orderCase} ELSE "order" END`,
+        })
+        .where("id IN (:...ids)", { ids })
+        .execute();
+    }
+
+    await qr.manager
+      .createQueryBuilder()
+      .update(Quiz)
+      .set({
+        title: updateQuizDto.title,
+        content: updateQuizDto.content,
+        explanation: updateQuizDto.explanation,
+        detailUrl: updateQuizDto.detailUrl,
+        field: updateQuizDto.field,
+        answer: updateQuizDto.answer,
+      })
+      .where("id=:id", {
+        id,
+      })
+
+      .execute();
+
+    return qr.manager.findOne(Quiz, {
+      relations: [
+        Relations.QUIZ.META,
+        Relations.QUIZ.MULTIPLE,
+      ],
+      where: {
+        id,
+      },
+    });
   }
 
   /**
@@ -220,6 +292,10 @@ export class QuizService {
   async remove(id: number) {
     await this.findOneById(id);
 
-    return this.quizRepository.delete(id);
+    await this.quizRepository.delete(id);
+
+    return {
+      removeStatus: true,
+    };
   }
 }
