@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseInterceptors,
 } from "@nestjs/common";
 import { QueryRunner as QR } from "typeorm/query-runner/QueryRunner";
@@ -17,6 +18,7 @@ import { TransactionInterceptor } from "../shared/interceptor/transaction.interc
 import { Role } from "../user/entities/user.entity";
 import { CheckAnswerDto } from "./dto/check-answer.dto";
 import { CreateQuizDto } from "./dto/create-quiz.dto";
+import { GetQuizListDto } from "./dto/get-quiz-list.dto";
 import { UpdateQuizDto } from "./dto/update-quiz.dto";
 import { QuizService } from "./quiz.service";
 
@@ -29,12 +31,6 @@ export class QuizController {
    * 사용자
    * ------------------------------
    */
-
-  @Get()
-  @Public()
-  findAll() {
-    return this.quizService.findAll();
-  }
 
   /**
    * 퀴즈 상세 - URL
@@ -63,6 +59,16 @@ export class QuizController {
    * 관리자
    * ------------------------------
    */
+
+  /**
+   * 퀴즈 목록
+   */
+  @Get()
+  @RBAC(Role.admin)
+  async findAll(@Query() getQuizListDto: GetQuizListDto) {
+    return await this.quizService.findAll(getQuizListDto);
+  }
+
   /**
    * 퀴즈 생성
    */

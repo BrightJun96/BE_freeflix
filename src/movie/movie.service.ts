@@ -319,55 +319,9 @@ export class MovieService {
 
   // 목록 조회(페이지네이션 및 검색)
   async findAll(getMovieDto: GetMovieDto, userId?: number) {
-    const { title, cursor } = getMovieDto;
+    const { title } = getMovieDto;
     const qb = await this.getMovies();
 
-    if (cursor) {
-      const { values, orders } = JSON.parse(
-        Buffer.from(cursor, "base64").toString("utf-8"),
-      );
-
-      const comparisonOperator = orders.some((order) =>
-        order.endsWith("DESC"),
-      )
-        ? "<"
-        : ">";
-
-      const columns = Object.keys(values);
-
-      const whereConditions = columns
-        .map((key) => `${qb.alias}."${key}"`)
-        .join(",");
-
-      const whereParams = columns
-        .map((v) => `:${v}`)
-        .join(",");
-
-      const query = `(${whereConditions}) ${comparisonOperator} (${whereParams})`;
-
-      qb.where(query, values);
-
-      getMovieDto.order = orders;
-    }
-    if (getMovieDto.order) {
-      getMovieDto.order.forEach((o, index) => {
-        const [column, direction] = o.split("_");
-
-        if (direction !== "ASC" && direction !== "DESC") {
-          throw new BadRequestException(
-            "Order는 ASC 또는 DESC로 설정해야 합니다.",
-          );
-        }
-
-        if (index === 0) {
-          qb.orderBy(`${qb.alias}.${column}`, direction);
-        } else {
-          qb.addOrderBy(`${qb.alias}.${column}`, direction);
-        }
-      });
-    }
-
-    // qb.orderBy();
     if (title) {
       qb.where("movie.title LIKE :title", {
         title: `%${title}%`,

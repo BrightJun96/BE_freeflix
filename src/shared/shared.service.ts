@@ -103,21 +103,46 @@ export class SharedService {
     const { cursor, order, take } = cursorPaginationDto;
 
     if (cursor) {
+      const { values, orders } = JSON.parse(
+        Buffer.from(cursor, "base64").toString("utf-8"),
+      );
+
+      const comparisonOperator = orders.some((order) =>
+        order.endsWith("DESC"),
+      )
+        ? "<"
+        : ">";
+
+      const columns = Object.keys(values);
+
+      const whereConditions = columns
+        .map((key) => `${qb.alias}."${key}"`)
+        .join(",");
+
+      const whereParams = columns
+        .map((v) => `:${v}`)
+        .join(",");
+
+      const query = `(${whereConditions}) ${comparisonOperator} (${whereParams})`;
+
+      qb.where(query, values);
     }
 
-    for (let i = 0; i < order.length; i++) {
-      const [column, direction] = order[i].split("_");
+    if (order) {
+      for (let i = 0; i < order.length; i++) {
+        const [column, direction] = order[i].split("_");
 
-      if (direction !== "ASC" && direction !== "DESC") {
-        throw new BadRequestException(
-          "Order는 ASC 또는 DESC로 설정해야 합니다.",
-        );
-      }
+        if (direction !== "ASC" && direction !== "DESC") {
+          throw new BadRequestException(
+            "Order는 ASC 또는 DESC로 설정해야 합니다.",
+          );
+        }
 
-      if (i === 0) {
-        qb.orderBy(`${qb.alias}.${column}`, direction);
-      } else {
-        qb.addOrderBy(`${qb.alias}.${column}`, direction);
+        if (i === 0) {
+          qb.orderBy(`${qb.alias}.${column}`, direction);
+        } else {
+          qb.addOrderBy(`${qb.alias}.${column}`, direction);
+        }
       }
     }
 
