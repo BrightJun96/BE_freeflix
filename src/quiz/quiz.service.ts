@@ -338,13 +338,13 @@ export class QuizService {
           : "",
       )
       .join(" ");
-    const orderCase = multipleChoices
-      .map((choice) =>
-        choice.order
-          ? `WHEN id = ${choice.id} THEN '${choice.order}'`
-          : "",
-      )
-      .join(" ");
+    // const orderCase = multipleChoices
+    //   .map((choice) =>
+    //     choice.order
+    //       ? `WHEN id = ${choice.id} THEN '${choice.order}'`
+    //       : "",
+    //   )
+    //   .join(" ");
 
     await qr.manager
       .createQueryBuilder()
@@ -352,7 +352,7 @@ export class QuizService {
       .set({
         content: () =>
           `CASE ${contentCase} ELSE content END`,
-        order: () => `CASE ${orderCase} ELSE "order" END`,
+        // order: () => `CASE ${orderCase} ELSE "order" END`,
       })
       .where("id IN (:...ids)", { ids })
       .execute();
