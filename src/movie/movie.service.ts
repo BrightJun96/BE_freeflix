@@ -24,9 +24,9 @@ import { Director } from "../director/entities/director.entity";
 import { Genre } from "../genre/entities/genre.entity";
 import { CACHE_KEY } from "../shared/const/cache-key.const";
 import { envVariablesKeys } from "../shared/const/env.const";
+import { Relations } from "../shared/const/relation.const";
 import { SharedService } from "../shared/shared.service";
 import { UserService } from "../user/user.service";
-import { Relations } from "./constant/relations";
 import { CreateMovieDto } from "./dto/create-movie.dto";
 import { GetMovieDto } from "./dto/get-movie.dto";
 import { UpdateMovieDto } from "./dto/update-movie.dto";
@@ -536,9 +536,9 @@ export class MovieService {
         id: movieId,
       },
       relations: [
-        Relations.DETAIL,
-        Relations.DIRECTOR,
-        Relations.GENRES,
+        Relations.MOVIE.DETAIL,
+        Relations.MOVIE.DIRECTOR,
+        Relations.MOVIE.GENRES,
       ],
     });
   }
@@ -552,9 +552,9 @@ export class MovieService {
     // 영화 상세 조회
     const movie = await qr.manager.findOne(Movie, {
       relations: [
-        Relations.DETAIL,
-        Relations.DIRECTOR,
-        Relations.GENRES,
+        Relations.MOVIE.DETAIL,
+        Relations.MOVIE.DIRECTOR,
+        Relations.MOVIE.GENRES,
       ],
       where: {
         id,
@@ -616,9 +616,9 @@ export class MovieService {
         id,
       },
       relations: [
-        Relations.DETAIL,
-        Relations.DIRECTOR,
-        Relations.GENRES,
+        Relations.MOVIE.DETAIL,
+        Relations.MOVIE.DIRECTOR,
+        Relations.MOVIE.GENRES,
       ],
     });
   }
@@ -629,7 +629,7 @@ export class MovieService {
       where: {
         id,
       },
-      relations: [Relations.DETAIL],
+      relations: [Relations.MOVIE.DETAIL],
     });
     if (!movie) {
       throw new NotFoundException(
