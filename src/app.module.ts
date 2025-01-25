@@ -126,7 +126,7 @@ import { WorkerModule } from "./worker/worker.module";
         //     rejectUnauthorized: false,
         //   },
         // }),
-        logging: true,
+        // logging: true,
       }),
 
       inject: [ConfigService],

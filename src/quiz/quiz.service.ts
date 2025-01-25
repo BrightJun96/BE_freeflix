@@ -1,7 +1,12 @@
-import { Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { QueryRunner, Repository } from "typeorm";
 import { Relations } from "../shared/const/relation.const";
+import { CheckAnswerDto } from "./dto/check-answer.dto";
 import { CreateMultipleChoiceDto } from "./dto/create-multiple-choice.dto";
 import { CreateQuizMetaDataDto } from "./dto/create-quiz-meta-data.dto";
 import { CreateQuizDto } from "./dto/create-quiz.dto";
@@ -21,10 +26,28 @@ export class QuizService {
     private readonly multipleChoiceRepository: Repository<MultipleChoice>,
   ) {}
 
+  /**
+   * 퀴즈 생성
+   */
   async create(
     createQuizDto: CreateQuizDto,
     qr: QueryRunner,
   ) {
+    const duplicationUrlQuiz = await qr.manager.findOne(
+      Quiz,
+      {
+        where: {
+          detailUrl: createQuizDto.detailUrl,
+        },
+      },
+    );
+
+    if (duplicationUrlQuiz) {
+      throw new BadRequestException(
+        "detailUrl은 중복되면 안됩니다.",
+      );
+    }
+
     const quizMetaData = await this.createQuizMetaData(
       createQuizDto.quizMetaData,
       qr,
@@ -57,6 +80,9 @@ export class QuizService {
     });
   }
 
+  /**
+   * 퀴즈 메타 데이터 생성
+   */
   async createQuizMetaData(
     metaData: CreateQuizMetaDataDto,
     qr: QueryRunner,
@@ -69,6 +95,9 @@ export class QuizService {
       .execute();
   }
 
+  /**
+   * 퀴즈 객관식 문제 생성
+   */
   async createMultipleChoices(
     multipleChoicesDto: CreateMultipleChoiceDto[],
     quizId: number,
@@ -90,6 +119,9 @@ export class QuizService {
       .execute();
   }
 
+  /**
+   * 퀴즈 생성
+   */
   async createQuiz(
     createQuizDto: CreateQuizDto,
     metaDataId: number,
@@ -115,15 +147,79 @@ export class QuizService {
     return `This action returns all quiz`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} quiz`;
+  /**
+   * 퀴즈 상세 - ID
+   */
+  async findOneById(id: number) {
+    const quiz = await this.quizRepository.findOne({
+      relations: [
+        Relations.QUIZ.MULTIPLE,
+        Relations.QUIZ.META,
+      ],
+      where: {
+        id,
+      },
+    });
+
+    if (!quiz) {
+      throw new NotFoundException(
+        "해당 퀴즈가 존재하지 않습니다.",
+      );
+    }
+
+    return quiz;
   }
 
+  /**
+   * 퀴즈 상세 - URL
+   */
+  async findOneByUrl(url: string) {
+    const quiz = await this.quizRepository.findOne({
+      where: {
+        detailUrl: url,
+      },
+      relations: [
+        Relations.QUIZ.MULTIPLE,
+        Relations.QUIZ.META,
+      ],
+    });
+
+    if (!quiz) {
+      throw new NotFoundException(
+        "해당 퀴즈가 존재하지 않습니다.",
+      );
+    }
+
+    return quiz;
+  }
+
+  /**
+   * 정답 확인
+   */
+  async checkAnswer({ quizId, answer }: CheckAnswerDto) {
+    const quiz = await this.findOneById(quizId);
+
+    return {
+      isCorrect: quiz.answer === answer,
+    };
+  }
+
+  /**
+   * 퀴즈 수정
+   * @param id
+   * @param updateQuizDto
+   */
   update(id: number, updateQuizDto: UpdateQuizDto) {
     return `This action updates a #${id} quiz`;
   }
 
-  remove(id: number) {
+  /**
+   * 퀴즈 삭제
+   * @param id
+   */
+  async remove(id: number) {
+    await this.findOneById(id);
+
     return this.quizRepository.delete(id);
   }
 }

@@ -40,6 +40,7 @@ export class Quiz extends BaseTable {
 
   @Column({
     comment: "퀴즈 URL-프론트에서 접근하기 위한 상세 경로",
+    unique: true,
   })
   detailUrl: string;
 
