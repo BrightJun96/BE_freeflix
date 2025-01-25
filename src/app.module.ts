@@ -112,7 +112,7 @@ import { WorkerModule } from "./worker/worker.module";
           QuizMetaData,
           MultipleChoice,
         ],
-        synchronize: true,
+        // synchronize: true,
         // ssl: {
         //   rejectUnauthorized: false,
         // },
