@@ -5,7 +5,10 @@ import { MultipleChoice } from "./entities/multiple-choice.entity";
 import { QuizMetaData } from "./entities/quiz-meta-data.entity";
 import { Quiz } from "./entities/quiz.entity";
 import { QuizController } from "./quiz.controller";
-import { QuizService } from "./quiz.service";
+import { CreateQuizService } from "./service/create-quiz.service";
+import { QuizListService } from "./service/quiz-list.service";
+import { QuizService } from "./service/quiz.service";
+import { UpdateQuizService } from "./service/update-quiz.service";
 
 @Module({
   imports: [
@@ -17,6 +20,11 @@ import { QuizService } from "./quiz.service";
     ]),
   ],
   controllers: [QuizController],
-  providers: [QuizService],
+  providers: [
+    QuizService,
+    QuizListService,
+    CreateQuizService,
+    UpdateQuizService,
+  ],
 })
 export class QuizModule {}

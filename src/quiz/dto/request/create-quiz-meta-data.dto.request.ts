@@ -1,10 +1,15 @@
+import { OmitType } from "@nestjs/swagger";
 import {
   IsNotEmpty,
   IsOptional,
   IsString,
 } from "class-validator";
+import { GetQuizMetaDataSharedDto } from "../shared/get-quiz-meta-data.shared.dto";
 
-export class CreateQuizMetaDataDto {
+export class CreateQuizMetaDataDtoRequest extends OmitType(
+  GetQuizMetaDataSharedDto,
+  ["id"],
+) {
   @IsNotEmpty()
   @IsString()
   seoMetaTitle: string; // SEO 메타 제목

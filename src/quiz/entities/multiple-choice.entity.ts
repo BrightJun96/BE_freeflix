@@ -18,10 +18,10 @@ export class MultipleChoice {
   })
   content: string;
 
-  @Column({
-    comment: "문제 번호",
-  })
-  order: string;
+  // @Column({
+  //   comment: "문제 번호",
+  // })
+  // order: string;
 
   @ManyToOne(() => Quiz, (quiz) => quiz.id, {
     onDelete: "CASCADE",
