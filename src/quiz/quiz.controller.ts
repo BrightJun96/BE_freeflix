@@ -55,7 +55,7 @@ export class QuizController {
   /**
    * 퀴즈 상세 - URL
    */
-  @Get("url/:detailUrl")
+  @Get("detail-url/:detailUrl")
   @Public()
   @ApiOperation({
     description: "퀴즈 상세 조회 BY URL",

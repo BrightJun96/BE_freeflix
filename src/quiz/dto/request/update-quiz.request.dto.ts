@@ -1,3 +1,4 @@
+import { PartialType } from "@nestjs/mapped-types";
 import { OmitType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import {
@@ -13,9 +14,12 @@ import { GetQuizSharedDto } from "../shared/get-quiz.shared.dto";
 import { UpdateMultipleChoiceRequestDto } from "./update-multiple-choice.request.dto";
 import { UpdateQuizMetaDataRequestDto } from "./update-quiz-meta-data.request.dto";
 
-export class UpdateQuizRequestDto extends OmitType(
-  GetQuizSharedDto,
-  ["id", "quizMetaData", "multipleChoices"],
+export class UpdateQuizRequestDto extends PartialType(
+  OmitType(GetQuizSharedDto, [
+    "id",
+    "quizMetaData",
+    "multipleChoices",
+  ]),
 ) {
   @IsOptional()
   @IsString()
