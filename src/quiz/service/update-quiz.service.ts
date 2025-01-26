@@ -4,7 +4,7 @@ import { Relations } from "../../shared/const/relation.const";
 import { UpdateMultipleChoiceRequestDto } from "../dto/request/update-multiple-choice.request.dto";
 import { UpdateQuizMetaDataRequestDto } from "../dto/request/update-quiz-meta-data.request.dto";
 import { UpdateQuizRequestDto } from "../dto/request/update-quiz.request.dto";
-import { GetQuizDto } from "../dto/shared/get-quiz.dto";
+import { GetQuizSharedDto } from "../dto/shared/get-quiz.shared.dto";
 import { MultipleChoice } from "../entities/multiple-choice.entity";
 import { QuizMetaData } from "../entities/quiz-meta-data.entity";
 import { Quiz } from "../entities/quiz.entity";
@@ -18,7 +18,7 @@ export class UpdateQuizService {
     id: number,
     updateQuizDto: UpdateQuizRequestDto,
     qr: QueryRunner,
-  ): Promise<GetQuizDto> {
+  ): Promise<GetQuizSharedDto> {
     const quiz = await qr.manager.findOne(Quiz, {
       relations: [
         Relations.QUIZ.META,

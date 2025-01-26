@@ -1,9 +1,9 @@
 import { OmitType } from "@nestjs/swagger";
 import { IsNotEmpty, IsString } from "class-validator";
-import { GetQuizMultipleChoiceDto } from "../shared/get-quiz-multiple-choice.dto";
+import { GetQuizMultipleChoiceSharedDto } from "../shared/get-quiz-multiple-choice.shared.dto";
 
 export class CreateMultipleChoiceRequestDto extends OmitType(
-  GetQuizMultipleChoiceDto,
+  GetQuizMultipleChoiceSharedDto,
   ["id"],
 ) {
   @IsNotEmpty()

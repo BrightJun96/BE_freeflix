@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 
-export class CheckAnswerDto {
+export class CheckAnswerSharedDto {
   @ApiProperty({
     description: "QUIZ PK",
     example: 1,

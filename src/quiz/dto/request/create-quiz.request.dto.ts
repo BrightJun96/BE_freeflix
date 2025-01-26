@@ -9,13 +9,13 @@ import {
   ValidateNested,
 } from "class-validator";
 import { Field } from "../../entities/quiz.entity";
-import { GetQuizDto } from "../shared/get-quiz.dto";
+import { GetQuizSharedDto } from "../shared/get-quiz.shared.dto";
 import { CreateMultipleChoiceRequestDto } from "./create-multiple-choice.request.dto";
 import { CreateQuizMetaDataDtoRequest } from "./create-quiz-meta-data.dto.request";
 
 // 퀴즈 생성 DTO
 export class CreateQuizRequestDto extends OmitType(
-  GetQuizDto,
+  GetQuizSharedDto,
   ["id", "quizMetaData", "multipleChoices"],
 ) {
   @IsNotEmpty()

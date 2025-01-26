@@ -4,10 +4,10 @@ import {
   IsOptional,
   IsString,
 } from "class-validator";
-import { GetQuizMetaDataDto } from "../shared/get-quiz-meta-data.dto";
+import { GetQuizMetaDataSharedDto } from "../shared/get-quiz-meta-data.shared.dto";
 
 export class CreateQuizMetaDataDtoRequest extends OmitType(
-  GetQuizMetaDataDto,
+  GetQuizMetaDataSharedDto,
   ["id"],
 ) {
   @IsNotEmpty()

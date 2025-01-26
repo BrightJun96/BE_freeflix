@@ -30,7 +30,7 @@ import { CheckAnswerResponseDto } from "./dto/response/check-answer.response.dto
 import { DeleteQuizResponseDto } from "./dto/response/delete-quiz.response.dto";
 import { GetQuizListResponseDto } from "./dto/response/get-quiz-list.response.dto";
 import { QuizDetailURLResponseDto } from "./dto/response/get-quiz-url.response.dto";
-import { GetQuizDto } from "./dto/shared/get-quiz.dto";
+import { GetQuizSharedDto } from "./dto/shared/get-quiz.shared.dto";
 import { CreateQuizService } from "./service/create-quiz.service";
 import { QuizListService } from "./service/quiz-list.service";
 import { QuizService } from "./service/quiz.service";
@@ -68,11 +68,11 @@ export class QuizController {
   })
   @ApiResponse({
     status: 200,
-    type: GetQuizDto,
+    type: GetQuizSharedDto,
   })
   async findOneByUrl(
     @Param("detailUrl") url: string,
-  ): Promise<GetQuizDto> {
+  ): Promise<GetQuizSharedDto> {
     return await this.quizService.findOneByUrl(url);
   }
 
@@ -151,12 +151,12 @@ export class QuizController {
   })
   @ApiResponse({
     status: 200,
-    type: GetQuizDto,
+    type: GetQuizSharedDto,
   })
   create(
     @Body() createQuizDto: CreateQuizRequestDto,
     @QueryRunner() qr: QR,
-  ): Promise<GetQuizDto> {
+  ): Promise<GetQuizSharedDto> {
     return this.createQuizService.create(createQuizDto, qr);
   }
 
@@ -171,13 +171,13 @@ export class QuizController {
   })
   @ApiResponse({
     status: 200,
-    type: GetQuizDto,
+    type: GetQuizSharedDto,
   })
   update(
     @Param("id", ParseIntPipe) id: number,
     @Body() updateQuizDto: UpdateQuizRequestDto,
     @QueryRunner() qr: QR,
-  ): Promise<GetQuizDto> {
+  ): Promise<GetQuizSharedDto> {
     return this.updateQuizService.update(
       id,
       updateQuizDto,
@@ -195,11 +195,11 @@ export class QuizController {
   })
   @ApiResponse({
     status: 200,
-    type: GetQuizDto,
+    type: GetQuizSharedDto,
   })
   async findOneById(
     @Param("id", ParseIntPipe) id: number,
-  ): Promise<GetQuizDto> {
+  ): Promise<GetQuizSharedDto> {
     return await this.quizService.findOneById(id);
   }
   /**

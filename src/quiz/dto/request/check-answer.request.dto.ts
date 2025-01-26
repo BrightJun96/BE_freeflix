@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsNumber } from "class-validator";
-import { CheckAnswerDto } from "../shared/check-answer.dto";
+import { CheckAnswerSharedDto } from "../shared/check-answer.shared.dto";
 
-export class CheckAnswerRequestDto extends CheckAnswerDto {
+export class CheckAnswerRequestDto extends CheckAnswerSharedDto {
   @IsNotEmpty()
   @IsNumber()
   quizId: number;

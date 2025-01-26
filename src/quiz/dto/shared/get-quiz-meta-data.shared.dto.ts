@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 
-export class GetQuizMetaDataDto {
+export class GetQuizMetaDataSharedDto {
   @ApiProperty({
     description: "PK",
     example: "1",

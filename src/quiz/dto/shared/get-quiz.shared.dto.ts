@@ -1,14 +1,14 @@
 import { PartialType } from "@nestjs/mapped-types";
 import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { Field, Quiz } from "../../entities/quiz.entity";
-import { GetQuizMetaDataDto } from "./get-quiz-meta-data.dto";
-import { GetQuizMultipleChoiceDto } from "./get-quiz-multiple-choice.dto";
+import { GetQuizMetaDataSharedDto } from "./get-quiz-meta-data.shared.dto";
+import { GetQuizMultipleChoiceSharedDto } from "./get-quiz-multiple-choice.shared.dto";
 
 /**
  * 퀴즈 상세  응답 DTO
  */
 
-export class GetQuizDto extends PartialType(
+export class GetQuizSharedDto extends PartialType(
   OmitType(Quiz, ["quizMetaData", "multipleChoices"]),
 ) {
   @ApiProperty({
@@ -56,10 +56,10 @@ export class GetQuizDto extends PartialType(
   @ApiProperty({
     description: "SEO 관련 사용될 데이터",
   })
-  quizMetaData: GetQuizMetaDataDto;
+  quizMetaData: GetQuizMetaDataSharedDto;
 
   @ApiProperty({
     description: "객관식 답안지들",
   })
-  multipleChoices: GetQuizMultipleChoiceDto[];
+  multipleChoices: GetQuizMultipleChoiceSharedDto[];
 }
