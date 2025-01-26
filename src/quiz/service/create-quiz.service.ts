@@ -4,9 +4,10 @@ import {
 } from "@nestjs/common";
 import { QueryRunner } from "typeorm";
 import { Relations } from "../../shared/const/relation.const";
-import { CreateMultipleChoiceDto } from "../dto/create-multiple-choice.dto";
-import { CreateQuizMetaDataDto } from "../dto/create-quiz-meta-data.dto";
-import { CreateQuizDto } from "../dto/create-quiz.dto";
+import { CreateMultipleChoiceDto } from "../dto/request/create-multiple-choice.dto";
+import { CreateQuizMetaDataDto } from "../dto/request/create-quiz-meta-data.dto";
+import { CreateQuizRequestDto } from "../dto/request/create-quiz.request.dto";
+import { GetQuizResponseDto } from "../dto/response/get-quiz.response.dto";
 import { MultipleChoice } from "../entities/multiple-choice.entity";
 import { QuizMetaData } from "../entities/quiz-meta-data.entity";
 import { Quiz } from "../entities/quiz.entity";
@@ -19,9 +20,9 @@ export class CreateQuizService {
    * 퀴즈 생성
    */
   async create(
-    createQuizDto: CreateQuizDto,
+    createQuizDto: CreateQuizRequestDto,
     qr: QueryRunner,
-  ) {
+  ): Promise<GetQuizResponseDto> {
     const duplicationUrlQuiz = await qr.manager.findOne(
       Quiz,
       {
@@ -112,7 +113,7 @@ export class CreateQuizService {
    * 퀴즈 생성
    */
   async createQuiz(
-    createQuizDto: CreateQuizDto,
+    createQuizDto: CreateQuizRequestDto,
     metaDataId: number,
     qr: QueryRunner,
   ) {

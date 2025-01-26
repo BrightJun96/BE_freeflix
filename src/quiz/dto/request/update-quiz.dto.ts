@@ -7,7 +7,7 @@ import {
   IsString,
   ValidateNested,
 } from "class-validator";
-import { Field } from "../entities/quiz.entity";
+import { Field } from "../../entities/quiz.entity";
 import { UpdateMultipleChoiceDto } from "./update-multiple-choice.dto";
 import { UpdateQuizMetaDataDto } from "./update-quiz-meta-data.dto";
 

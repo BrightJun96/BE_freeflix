@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsNumber } from "class-validator";
 
-export class CheckAnswerDto {
+export class CheckAnswerRequestDto {
   @IsNotEmpty()
   @IsNumber()
   quizId: number;

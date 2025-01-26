@@ -1,9 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { QueryRunner } from "typeorm";
 import { Relations } from "../../shared/const/relation.const";
-import { UpdateMultipleChoiceDto } from "../dto/update-multiple-choice.dto";
-import { UpdateQuizMetaDataDto } from "../dto/update-quiz-meta-data.dto";
-import { UpdateQuizDto } from "../dto/update-quiz.dto";
+import { UpdateMultipleChoiceDto } from "../dto/request/update-multiple-choice.dto";
+import { UpdateQuizMetaDataDto } from "../dto/request/update-quiz-meta-data.dto";
+import { UpdateQuizDto } from "../dto/request/update-quiz.dto";
+import { GetQuizResponseDto } from "../dto/response/get-quiz.response.dto";
 import { MultipleChoice } from "../entities/multiple-choice.entity";
 import { QuizMetaData } from "../entities/quiz-meta-data.entity";
 import { Quiz } from "../entities/quiz.entity";
@@ -17,7 +18,7 @@ export class UpdateQuizService {
     id: number,
     updateQuizDto: UpdateQuizDto,
     qr: QueryRunner,
-  ) {
+  ): Promise<GetQuizResponseDto> {
     const quiz = await qr.manager.findOne(Quiz, {
       relations: [
         Relations.QUIZ.META,

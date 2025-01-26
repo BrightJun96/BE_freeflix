@@ -2,7 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { SharedService } from "../../shared/shared.service";
-import { GetQuizListDto } from "../dto/get-quiz-list.dto";
+import { GetQuizListRequestDto } from "../dto/request/get-quiz-list.request.dto";
+import { GetQuizListResponseDto } from "../dto/response/get-quiz-list.response.dto";
 import { Quiz } from "../entities/quiz.entity";
 
 @Injectable()
@@ -16,7 +17,9 @@ export class QuizListService {
   /**
    * 퀴즈 목록
    */
-  async findAll(getQuizListDto: GetQuizListDto) {
+  async findAll(
+    getQuizListDto: GetQuizListRequestDto,
+  ): Promise<GetQuizListResponseDto> {
     const qb =
       this.quizRepository.createQueryBuilder("quiz");
 

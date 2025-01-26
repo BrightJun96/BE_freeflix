@@ -7,12 +7,12 @@ import {
   IsString,
   ValidateNested,
 } from "class-validator";
-import { Field } from "../entities/quiz.entity";
+import { Field } from "../../entities/quiz.entity";
 import { CreateMultipleChoiceDto } from "./create-multiple-choice.dto";
 import { CreateQuizMetaDataDto } from "./create-quiz-meta-data.dto";
 
 // 퀴즈 생성 DTO
-export class CreateQuizDto {
+export class CreateQuizRequestDto {
   @IsNotEmpty()
   @IsString()
   title: string; // 퀴즈 제목

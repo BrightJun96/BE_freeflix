@@ -14,6 +14,7 @@ export class CursorPaginationDto {
     description: "커서",
     example:
       "eyJ2YWx1ZXMiOnsiaWQiOjR9LCJvcmRlcnMiOlsiaWRfREVTQyJdfQ==",
+    required: false,
   })
   cursor?: string;
 
@@ -23,6 +24,7 @@ export class CursorPaginationDto {
   @ApiProperty({
     description: "정렬 기준(내림 차순/오름 차순)",
     example: ["id_DESC"],
+    required: false,
   })
   @Transform(({ value }) =>
     Array.isArray(value) ? value : [value],
@@ -34,6 +36,7 @@ export class CursorPaginationDto {
   @ApiProperty({
     description: "가져올 데이터 수",
     example: 5,
+    required: false,
   })
   take: number = 5; // 한 번에 가져올 데이터 수
 }

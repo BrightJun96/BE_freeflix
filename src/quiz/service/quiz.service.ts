@@ -5,7 +5,11 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Relations } from "../../shared/const/relation.const";
-import { CheckAnswerDto } from "../dto/check-answer.dto";
+import { CheckAnswerRequestDto } from "../dto/request/check-answer.request.dto";
+import { CheckAnswerResponseDto } from "../dto/response/check-answer.response.dto";
+import { DeleteQuizResponseDto } from "../dto/response/delete-quiz.response.dto";
+import { QuizDetailURLResponseDto } from "../dto/response/get-quiz-url.response.dto";
+import { GetQuizResponseDto } from "../dto/response/get-quiz.response.dto";
 import { Quiz } from "../entities/quiz.entity";
 
 @Injectable()
@@ -41,7 +45,9 @@ export class QuizService {
   /**
    * 퀴즈 상세 - URL
    */
-  async findOneByUrl(url: string) {
+  async findOneByUrl(
+    url: string,
+  ): Promise<GetQuizResponseDto> {
     const quiz = await this.quizRepository.findOne({
       where: {
         detailUrl: url,
@@ -64,7 +70,10 @@ export class QuizService {
   /**
    * 정답 확인
    */
-  async checkAnswer({ quizId, answer }: CheckAnswerDto) {
+  async checkAnswer({
+    quizId,
+    answer,
+  }: CheckAnswerRequestDto): Promise<CheckAnswerResponseDto> {
     const quiz = await this.findOneById(quizId);
 
     return {
@@ -75,7 +84,7 @@ export class QuizService {
   /**
    * 퀴즈 삭제
    */
-  async remove(id: number) {
+  async remove(id: number): Promise<DeleteQuizResponseDto> {
     await this.findOneById(id);
 
     await this.quizRepository.delete(id);
@@ -88,7 +97,9 @@ export class QuizService {
   /**
    * 퀴즈 URL 목록
    */
-  async findDetailUrls() {
+  async findDetailUrls(): Promise<
+    QuizDetailURLResponseDto[]
+  > {
     return await this.quizRepository
       .createQueryBuilder("quiz")
       .select(["quiz.detailUrl"])
