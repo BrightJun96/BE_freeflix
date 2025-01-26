@@ -56,6 +56,6 @@ async function bootstrap() {
 
   app.use(session({ secret: process.env.SESSION_SECRET }));
 
-  await app.listen(process.env.PORT || 8080);
+  await app.listen(process.env.PORT || 3000);
 }
 bootstrap();
