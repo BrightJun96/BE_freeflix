@@ -113,10 +113,10 @@ import { WorkerModule } from "./worker/worker.module";
           QuizMetaData,
           MultipleChoice,
         ],
-        synchronize: true,
-        // ssl: {
-        //   rejectUnauthorized: false,
-        // },
+        // synchronize: true,
+        ssl: {
+          rejectUnauthorized: false,
+        },
         // configService.get<string>(
         //   envVariablesKeys.ENV,
         // ) !== "prod",
