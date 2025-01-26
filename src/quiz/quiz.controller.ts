@@ -30,7 +30,7 @@ import { CheckAnswerResponseDto } from "./dto/response/check-answer.response.dto
 import { DeleteQuizResponseDto } from "./dto/response/delete-quiz.response.dto";
 import { GetQuizListResponseDto } from "./dto/response/get-quiz-list.response.dto";
 import { QuizDetailURLResponseDto } from "./dto/response/get-quiz-url.response.dto";
-import { GetQuizResponseDto } from "./dto/response/get-quiz.response.dto";
+import { GetQuizDto } from "./dto/shared/get-quiz.dto";
 import { CreateQuizService } from "./service/create-quiz.service";
 import { QuizListService } from "./service/quiz-list.service";
 import { QuizService } from "./service/quiz.service";
@@ -68,11 +68,11 @@ export class QuizController {
   })
   @ApiResponse({
     status: 200,
-    type: GetQuizResponseDto,
+    type: GetQuizDto,
   })
   async findOneByUrl(
     @Param("detailUrl") url: string,
-  ): Promise<GetQuizResponseDto> {
+  ): Promise<GetQuizDto> {
     return await this.quizService.findOneByUrl(url);
   }
 
@@ -103,8 +103,8 @@ export class QuizController {
     description: "퀴즈 정답 확인",
   })
   @ApiResponse({
-    status: 200,
-    type: CheckAnswerRequestDto,
+    status: 201,
+    type: CheckAnswerResponseDto,
   })
   async checkAnswer(
     @Body() checkAnswerRequestDto: CheckAnswerRequestDto,
@@ -151,12 +151,12 @@ export class QuizController {
   })
   @ApiResponse({
     status: 200,
-    type: GetQuizResponseDto,
+    type: GetQuizDto,
   })
   create(
     @Body() createQuizDto: CreateQuizRequestDto,
     @QueryRunner() qr: QR,
-  ): Promise<GetQuizResponseDto> {
+  ): Promise<GetQuizDto> {
     return this.createQuizService.create(createQuizDto, qr);
   }
 
@@ -171,13 +171,13 @@ export class QuizController {
   })
   @ApiResponse({
     status: 200,
-    type: GetQuizResponseDto,
+    type: GetQuizDto,
   })
   update(
     @Param("id", ParseIntPipe) id: number,
     @Body() updateQuizDto: UpdateQuizDto,
     @QueryRunner() qr: QR,
-  ): Promise<GetQuizResponseDto> {
+  ): Promise<GetQuizDto> {
     return this.updateQuizService.update(
       id,
       updateQuizDto,
@@ -195,11 +195,11 @@ export class QuizController {
   })
   @ApiResponse({
     status: 200,
-    type: GetQuizResponseDto,
+    type: GetQuizDto,
   })
   async findOneById(
     @Param("id", ParseIntPipe) id: number,
-  ): Promise<GetQuizResponseDto> {
+  ): Promise<GetQuizDto> {
     return await this.quizService.findOneById(id);
   }
   /**

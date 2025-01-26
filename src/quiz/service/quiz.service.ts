@@ -9,7 +9,7 @@ import { CheckAnswerRequestDto } from "../dto/request/check-answer.request.dto";
 import { CheckAnswerResponseDto } from "../dto/response/check-answer.response.dto";
 import { DeleteQuizResponseDto } from "../dto/response/delete-quiz.response.dto";
 import { QuizDetailURLResponseDto } from "../dto/response/get-quiz-url.response.dto";
-import { GetQuizResponseDto } from "../dto/response/get-quiz.response.dto";
+import { GetQuizDto } from "../dto/shared/get-quiz.dto";
 import { Quiz } from "../entities/quiz.entity";
 
 @Injectable()
@@ -45,9 +45,7 @@ export class QuizService {
   /**
    * 퀴즈 상세 - URL
    */
-  async findOneByUrl(
-    url: string,
-  ): Promise<GetQuizResponseDto> {
+  async findOneByUrl(url: string): Promise<GetQuizDto> {
     const quiz = await this.quizRepository.findOne({
       where: {
         detailUrl: url,

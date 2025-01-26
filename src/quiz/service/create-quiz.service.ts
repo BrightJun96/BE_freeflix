@@ -5,9 +5,9 @@ import {
 import { QueryRunner } from "typeorm";
 import { Relations } from "../../shared/const/relation.const";
 import { CreateMultipleChoiceDto } from "../dto/request/create-multiple-choice.dto";
-import { CreateQuizMetaDataDto } from "../dto/request/create-quiz-meta-data.dto";
+import { CreateQuizMetaDataDtoRequest } from "../dto/request/create-quiz-meta-data.dto.request";
 import { CreateQuizRequestDto } from "../dto/request/create-quiz.request.dto";
-import { GetQuizResponseDto } from "../dto/response/get-quiz.response.dto";
+import { GetQuizDto } from "../dto/shared/get-quiz.dto";
 import { MultipleChoice } from "../entities/multiple-choice.entity";
 import { QuizMetaData } from "../entities/quiz-meta-data.entity";
 import { Quiz } from "../entities/quiz.entity";
@@ -22,7 +22,7 @@ export class CreateQuizService {
   async create(
     createQuizDto: CreateQuizRequestDto,
     qr: QueryRunner,
-  ): Promise<GetQuizResponseDto> {
+  ): Promise<GetQuizDto> {
     const duplicationUrlQuiz = await qr.manager.findOne(
       Quiz,
       {
@@ -74,7 +74,7 @@ export class CreateQuizService {
    * 퀴즈 메타 데이터 생성
    */
   async createQuizMetaData(
-    metaData: CreateQuizMetaDataDto,
+    metaData: CreateQuizMetaDataDtoRequest,
     qr: QueryRunner,
   ) {
     return await qr.manager

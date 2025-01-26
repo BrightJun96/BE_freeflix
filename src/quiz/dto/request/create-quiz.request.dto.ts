@@ -1,3 +1,4 @@
+import { OmitType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import {
   IsArray,
@@ -8,11 +9,15 @@ import {
   ValidateNested,
 } from "class-validator";
 import { Field } from "../../entities/quiz.entity";
+import { GetQuizDto } from "../shared/get-quiz.dto";
 import { CreateMultipleChoiceDto } from "./create-multiple-choice.dto";
-import { CreateQuizMetaDataDto } from "./create-quiz-meta-data.dto";
+import { CreateQuizMetaDataDtoRequest } from "./create-quiz-meta-data.dto.request";
 
 // 퀴즈 생성 DTO
-export class CreateQuizRequestDto {
+export class CreateQuizRequestDto extends OmitType(
+  GetQuizDto,
+  ["id", "quizMetaData", "multipleChoices"],
+) {
   @IsNotEmpty()
   @IsString()
   title: string; // 퀴즈 제목
@@ -38,8 +43,8 @@ export class CreateQuizRequestDto {
   answer: number; // 정답 번호
 
   @ValidateNested()
-  @Type(() => CreateQuizMetaDataDto)
-  quizMetaData: CreateQuizMetaDataDto; // 메타데이터 DTO
+  @Type(() => CreateQuizMetaDataDtoRequest)
+  quizMetaData: CreateQuizMetaDataDtoRequest; // 메타데이터 DTO
 
   @IsArray()
   @ValidateNested({ each: true })

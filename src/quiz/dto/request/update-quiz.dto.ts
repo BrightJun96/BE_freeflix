@@ -1,3 +1,4 @@
+import { OmitType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import {
   IsArray,
@@ -8,10 +9,15 @@ import {
   ValidateNested,
 } from "class-validator";
 import { Field } from "../../entities/quiz.entity";
+import { GetQuizDto } from "../shared/get-quiz.dto";
 import { UpdateMultipleChoiceDto } from "./update-multiple-choice.dto";
 import { UpdateQuizMetaDataDto } from "./update-quiz-meta-data.dto";
 
-export class UpdateQuizDto {
+export class UpdateQuizDto extends OmitType(GetQuizDto, [
+  "id",
+  "quizMetaData",
+  "multipleChoices",
+]) {
   @IsOptional()
   @IsString()
   title?: string;
