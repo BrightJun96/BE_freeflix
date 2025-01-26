@@ -25,7 +25,7 @@ import { Role } from "../user/entities/user.entity";
 import { CheckAnswerRequestDto } from "./dto/request/check-answer.request.dto";
 import { CreateQuizRequestDto } from "./dto/request/create-quiz.request.dto";
 import { GetQuizListRequestDto } from "./dto/request/get-quiz-list.request.dto";
-import { UpdateQuizDto } from "./dto/request/update-quiz.dto";
+import { UpdateQuizRequestDto } from "./dto/request/update-quiz.request.dto";
 import { CheckAnswerResponseDto } from "./dto/response/check-answer.response.dto";
 import { DeleteQuizResponseDto } from "./dto/response/delete-quiz.response.dto";
 import { GetQuizListResponseDto } from "./dto/response/get-quiz-list.response.dto";
@@ -175,7 +175,7 @@ export class QuizController {
   })
   update(
     @Param("id", ParseIntPipe) id: number,
-    @Body() updateQuizDto: UpdateQuizDto,
+    @Body() updateQuizDto: UpdateQuizRequestDto,
     @QueryRunner() qr: QR,
   ): Promise<GetQuizDto> {
     return this.updateQuizService.update(

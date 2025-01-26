@@ -10,7 +10,7 @@ import {
 } from "class-validator";
 import { Field } from "../../entities/quiz.entity";
 import { GetQuizDto } from "../shared/get-quiz.dto";
-import { CreateMultipleChoiceDto } from "./create-multiple-choice.dto";
+import { CreateMultipleChoiceRequestDto } from "./create-multiple-choice.request.dto";
 import { CreateQuizMetaDataDtoRequest } from "./create-quiz-meta-data.dto.request";
 
 // 퀴즈 생성 DTO
@@ -48,6 +48,6 @@ export class CreateQuizRequestDto extends OmitType(
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CreateMultipleChoiceDto)
-  multipleChoices: CreateMultipleChoiceDto[]; // 객관식 문제 배열
+  @Type(() => CreateMultipleChoiceRequestDto)
+  multipleChoices: CreateMultipleChoiceRequestDto[]; // 객관식 문제 배열
 }

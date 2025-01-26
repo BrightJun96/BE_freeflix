@@ -10,14 +10,13 @@ import {
 } from "class-validator";
 import { Field } from "../../entities/quiz.entity";
 import { GetQuizDto } from "../shared/get-quiz.dto";
-import { UpdateMultipleChoiceDto } from "./update-multiple-choice.dto";
-import { UpdateQuizMetaDataDto } from "./update-quiz-meta-data.dto";
+import { UpdateMultipleChoiceRequestDto } from "./update-multiple-choice.request.dto";
+import { UpdateQuizMetaDataRequestDto } from "./update-quiz-meta-data.request.dto";
 
-export class UpdateQuizDto extends OmitType(GetQuizDto, [
-  "id",
-  "quizMetaData",
-  "multipleChoices",
-]) {
+export class UpdateQuizRequestDto extends OmitType(
+  GetQuizDto,
+  ["id", "quizMetaData", "multipleChoices"],
+) {
   @IsOptional()
   @IsString()
   title?: string;
@@ -44,12 +43,12 @@ export class UpdateQuizDto extends OmitType(GetQuizDto, [
 
   @IsOptional()
   @ValidateNested()
-  @Type(() => UpdateQuizMetaDataDto)
-  quizMetaData?: UpdateQuizMetaDataDto;
+  @Type(() => UpdateQuizMetaDataRequestDto)
+  quizMetaData?: UpdateQuizMetaDataRequestDto;
 
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => UpdateMultipleChoiceDto)
-  multipleChoices?: UpdateMultipleChoiceDto[];
+  @Type(() => UpdateMultipleChoiceRequestDto)
+  multipleChoices?: UpdateMultipleChoiceRequestDto[];
 }

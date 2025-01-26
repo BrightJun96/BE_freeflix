@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { QueryRunner } from "typeorm";
 import { Relations } from "../../shared/const/relation.const";
-import { UpdateMultipleChoiceDto } from "../dto/request/update-multiple-choice.dto";
-import { UpdateQuizMetaDataDto } from "../dto/request/update-quiz-meta-data.dto";
-import { UpdateQuizDto } from "../dto/request/update-quiz.dto";
+import { UpdateMultipleChoiceRequestDto } from "../dto/request/update-multiple-choice.request.dto";
+import { UpdateQuizMetaDataRequestDto } from "../dto/request/update-quiz-meta-data.request.dto";
+import { UpdateQuizRequestDto } from "../dto/request/update-quiz.request.dto";
 import { GetQuizDto } from "../dto/shared/get-quiz.dto";
 import { MultipleChoice } from "../entities/multiple-choice.entity";
 import { QuizMetaData } from "../entities/quiz-meta-data.entity";
@@ -16,7 +16,7 @@ export class UpdateQuizService {
    */
   async update(
     id: number,
-    updateQuizDto: UpdateQuizDto,
+    updateQuizDto: UpdateQuizRequestDto,
     qr: QueryRunner,
   ): Promise<GetQuizDto> {
     const quiz = await qr.manager.findOne(Quiz, {
@@ -63,7 +63,7 @@ export class UpdateQuizService {
 
   async updateMetaData(
     metaId: number,
-    updateQuizMetaDataDto: UpdateQuizMetaDataDto,
+    updateQuizMetaDataDto: UpdateQuizMetaDataRequestDto,
     qr: QueryRunner,
   ) {
     await qr.manager
@@ -80,7 +80,7 @@ export class UpdateQuizService {
    * 객관식 답안 수정
    */
   async updateMultipleChoice(
-    multipleChoices: UpdateMultipleChoiceDto[],
+    multipleChoices: UpdateMultipleChoiceRequestDto[],
     qr: QueryRunner,
   ) {
     const ids = multipleChoices.map((choice) => choice.id); // 업데이트할 ID 추출
@@ -109,7 +109,7 @@ export class UpdateQuizService {
    * 퀴즈 수정
    */
   async updateQuiz(
-    updateQuizDto: UpdateQuizDto,
+    updateQuizDto: UpdateQuizRequestDto,
     quizId: number,
     qr: QueryRunner,
   ) {

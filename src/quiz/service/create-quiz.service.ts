@@ -4,7 +4,7 @@ import {
 } from "@nestjs/common";
 import { QueryRunner } from "typeorm";
 import { Relations } from "../../shared/const/relation.const";
-import { CreateMultipleChoiceDto } from "../dto/request/create-multiple-choice.dto";
+import { CreateMultipleChoiceRequestDto } from "../dto/request/create-multiple-choice.request.dto";
 import { CreateQuizMetaDataDtoRequest } from "../dto/request/create-quiz-meta-data.dto.request";
 import { CreateQuizRequestDto } from "../dto/request/create-quiz.request.dto";
 import { GetQuizDto } from "../dto/shared/get-quiz.dto";
@@ -89,7 +89,7 @@ export class CreateQuizService {
    * 퀴즈 객관식 문제 생성
    */
   async createMultipleChoices(
-    multipleChoicesDto: CreateMultipleChoiceDto[],
+    multipleChoicesDto: CreateMultipleChoiceRequestDto[],
     quizId: number,
     qr: QueryRunner,
   ) {
