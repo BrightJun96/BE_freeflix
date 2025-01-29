@@ -1,3 +1,4 @@
+import { CacheInterceptor } from "@nestjs/cache-manager";
 import {
   Body,
   Controller,
@@ -57,6 +58,7 @@ export class QuizController {
    */
   @Get("detail-url/:detailUrl")
   @Public()
+  @UseInterceptors(CacheInterceptor)
   @ApiOperation({
     description: "퀴즈 상세 조회 BY URL",
   })
@@ -73,6 +75,7 @@ export class QuizController {
   async findOneByUrl(
     @Param("detailUrl") url: string,
   ): Promise<GetQuizSharedDto> {
+    console.log("detailUrl Cache");
     return await this.quizService.findOneByUrl(url);
   }
 
@@ -81,6 +84,7 @@ export class QuizController {
    */
   @Get("detail-urls")
   @Public()
+  @UseInterceptors(CacheInterceptor)
   @ApiOperation({
     description: "퀴즈 DETAIL URL 목록",
   })
@@ -91,6 +95,7 @@ export class QuizController {
   async findDetailUrls(): Promise<
     QuizDetailURLResponseDto[]
   > {
+    console.log("퀴즈 DETAIL URL 목록");
     return await this.quizService.findDetailUrls();
   }
 

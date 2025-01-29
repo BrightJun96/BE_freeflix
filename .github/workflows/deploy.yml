@@ -38,5 +38,5 @@ jobs:
           aws ssm send-command \
           --instance-ids "i-07b3e922cca70a01c" \
           --document-name "AWS-RunShellScript" \
-            --parameters '{"commands":["cd /home/ec2-user/devlounge-app","sudo docker stop devlounge-container || true","sudo docker rm devlounge-container || true","sudo docker run --name devlounge-container --env-file .env -d -p 3000:3000 jjalseu/devlounge:latest"]}' \
+            --parameters '{"commands":["cd /home/ec2-user/devlounge-app","sudo docker pull jjalseu/devlounge:latest","sudo docker stop devlounge-container || true","sudo docker rm devlounge-container || true","sudo docker run --name devlounge-container --env-file .env -d -p 3000:3000 jjalseu/devlounge:latest"]}' \
 

@@ -18,6 +18,7 @@ import {
 import { ScheduleModule } from "@nestjs/schedule";
 import { ServeStaticModule } from "@nestjs/serve-static";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import * as redisStore from "cache-manager-redis-store";
 import * as Joi from "joi";
 import { join } from "path";
 import { AuthModule } from "./auth/auth.module";
@@ -77,6 +78,9 @@ import { WorkerModule } from "./worker/worker.module";
         AWS_SECRET_ACCESS_KEY: Joi.string().required(),
         AWS_REGION: Joi.string().required(),
         BUCKET_NAME: Joi.string().required(),
+        REDIS_HOST: Joi.string().required(),
+        REDIS_PORT: Joi.number().required(),
+        REDIS_PASSWORD: Joi.string().required(),
       }),
     }),
     // TypeORM 설정
@@ -144,9 +148,14 @@ import { WorkerModule } from "./worker/worker.module";
     FileUploadModule,
     QuizModule,
     CacheModule.register({
-      ttl: 0,
+      store: redisStore,
+      host: process.env.REDIS_HOST,
+      port: process.env.REDIS_PORT,
+      password: process.env.REDIS_PASSWORD, // ✅ Redis 비밀번호 추가
+      ttl: 10, // 초단위로 적용
       isGlobal: true,
     }),
+
     ScheduleModule.forRoot(),
     ChatModule,
     ConditionalModule.registerWhen(
