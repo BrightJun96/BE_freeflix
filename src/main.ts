@@ -20,8 +20,6 @@ async function bootstrap() {
       "http://localhost:3000",
     ],
     credentials: true,
-    //PROD
-    // origin: * ,//PROD
   });
 
   const config = new DocumentBuilder()
