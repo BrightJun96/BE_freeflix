@@ -36,7 +36,7 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          ssh -vvv -i so-precious-pie.pem -o StrictHostKeyChecking=no ec2-user@ec2-13-125-27-88.ap-northeast-2.compute.amazonaws.com 'cd /home/ec2-user/devlounge-app && sudo docker pull jjalseu/devlounge:latest && sudo docker stop devlounge-container || true && sudo docker rm devlounge-container || true && sudo docker run --name devlounge-container -d -p 3000:3000 jjalseu/devlounge:latest'
+          ssh -vvv -i so-precious-pie.pem -o StrictHostKeyChecking=no ec2-user@ec2-13-125-27-88.ap-northeast-2.compute.amazonaws.com 'cd /home/ec2-user/devlounge-app && sudo docker pull jjalseu/devlounge:latest && sudo docker stop devlounge-container || true && sudo docker rm devlounge-container || true && sudo docker run --name devlounge-container --env-file .env -d -p 3000:3000 jjalseu/devlounge:latest'
 #      - name: Configure AWS credentials
 #        uses: aws-actions/configure-aws-credentials@v2
 #        with:
