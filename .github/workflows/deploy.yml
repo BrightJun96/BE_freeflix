@@ -39,31 +39,38 @@ jobs:
             --instance-ids "i-07b3e922cca70a01c" \
             --document-name "AWS-RunShellScript" \
             --parameters '{"commands":["cd /home/ec2-user/devlounge-app",
-            "sudo docker pull --no-cache jjalseu/devlounge:latest || true",
+            "echo '현재 실행 중인 컨테이너 정보 확인'",
+            "sudo docker ps -a",
+
+            "echo '현재 실행 중인 컨테이너의 이미지 ID 확인'",
+            "old_image_id=$(sudo docker inspect --format=\'{{.Image}}\' devlounge-container || echo 'none')",
+            "echo 현재 컨테이너의 이미지 ID: $old_image_id",
+
+            "echo '새로운 이미지 Pull'",
+            "sudo docker pull --no-cache jjalseu/devlounge:latest",
+
+            "echo '기존 컨테이너 중지 및 삭제'",
             "sudo docker stop devlounge-container || true",
             "sudo docker rm -f devlounge-container || true",
             "sudo docker update --restart=no devlounge-container || true",
             "sudo docker container prune -f || true",
-            "sudo docker run --name devlounge-container --env-file /home/ec2-user/devlounge-app/.env -d -p 3000:3000 jjalseu/devlounge:latest || true",
-            "sleep 5",
-            "sudo docker logs devlounge-container || true",
-            "sudo docker ps -a | tee /home/ec2-user/deploy_log.txt"]}' \
+
+            "echo '사용되지 않는 기존 이미지 삭제'",
+            "sudo docker images | grep jjalseu/devlounge",
+            "sudo docker rmi $(sudo docker images -q jjalseu/devlounge | tail -n +2) || true",
+
+            "echo '최신 이미지 ID 확인'",
+            "new_image_id=$(sudo docker images -q jjalseu/devlounge:latest)",
+            "echo 최신 이미지 ID: $new_image_id",
+
+            "echo '컨테이너 실행'",
+            "sudo docker run --name devlounge-container --env-file /home/ec2-user/devlounge-app/.env -d -p 3000:3000 jjalseu/devlounge:latest",
+
+            "echo '최종 실행된 컨테이너 정보 확인'",
+            "sudo docker ps -a"]}' \
             --query "Command.CommandId" --output text)
 
           aws ssm wait command-executed --instance-id "i-07b3e922cca70a01c" --command-id "$command_id" || true
-
-#            aws ssm send-command \
-#                  --instance-ids "i-07b3e922cca70a01c" \
-#                  --document-name "AWS-RunShellScript" \
-#                  --parameters '{"commands":["cd /home/ec2-user/devlounge-app",
-#                  "sudo docker pull --no-cache jjalseu/devlounge:latest",
-#                  "sudo docker stop devlounge-container || true",
-#                  "sudo docker rm -f devlounge-container || true",
-#                  "sudo docker update --restart=no devlounge-container || true",
-#                  "sudo docker container prune -f",
-#                  "sudo docker run --name devlounge-container --env-file /home/ec2-user/devlounge-app/.env -d -p 3000:3000 jjalseu/devlounge:latest",
-#                  "sleep 5",
-#                  "sudo docker ps -a | tee /home/ec2-user/deploy_log.txt"]}' \
 #          aws ssm send-command \
 #          --instance-ids "i-07b3e922cca70a01c" \
 #          --document-name "AWS-RunShellScript" \
