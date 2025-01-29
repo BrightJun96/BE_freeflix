@@ -26,55 +26,26 @@ jobs:
 #        run: |
 #          docker buildx build --platform linux/amd64,linux/arm64 -t jjalseu/devlounge:latest -t jjalseu/devlounge:${{github.sha}} --push -f ./Dockerfile --target production .
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Deploy application
+      - name: Install SSH key
         run: |
-          command_id=$(aws ssm send-command \
-            --instance-ids "i-07b3e922cca70a01c" \
-            --document-name "AWS-RunShellScript" \
-            --parameters '{
-              "commands": [
-                "cd /home/ec2-user/devlounge-app",
-                "echo '\''현재 실행 중인 컨테이너 정보 확인'\''",
-                "sudo docker ps -a",
+          echo "${{ secrets.EC2_PEM_KEY }}" | tr -d '\r' > so-precious-pie.pem
+          chmod 400 so-precious-pie.pem
 
-                "echo '\''현재 실행 중인 컨테이너의 이미지 ID 확인'\''",
-                "old_image_id=$(sudo docker inspect --format={{.Image}} devlounge-container || echo '\''none'\'')",
-                "echo '\''현재 컨테이너의 이미지 ID: $old_image_id'\''",
+      - name: Verify SSH key creation
+        run: ls -l so-precious-pie.pem
 
-                "echo '\''새로운 이미지 Pull'\''",
-                "sudo docker pull --no-cache jjalseu/devlounge:latest",
+      - name: Deploy to EC2
+        run: |
+          ssh -vvv -i so-precious-pie.pem -o StrictHostKeyChecking=no ec2-user@ec2-13-125-27-88.ap-northeast-2.compute.amazonaws.com 'cd /home/ec2-user/devlounge-app && sudo docker pull jjalseu/devlounge:latest && sudo docker stop devlounge-container || true && sudo docker rm devlounge-container || true && sudo docker run --name devlounge-container -d -p 3000:3000 jjalseu/devlounge:latest'
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v2
+#        with:
+#            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+#            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#            aws-region: ${{ secrets.AWS_REGION }}
 
-                "echo '\''기존 컨테이너 중지 및 삭제'\''",
-                "sudo docker stop devlounge-container || true",
-                "sudo docker rm -f devlounge-container || true",
-                "sudo docker update --restart=no devlounge-container || true",
-                "sudo docker container prune -f || true",
-
-                "echo '\''사용되지 않는 기존 이미지 삭제'\''",
-                "sudo docker images | grep jjalseu/devlounge",
-                "sudo docker rmi $(sudo docker images -q jjalseu/devlounge | tail -n +2) || true",
-
-                "echo '\''최신 이미지 ID 확인'\''",
-                "new_image_id=$(sudo docker images -q jjalseu/devlounge:latest)",
-                "echo '\''최신 이미지 ID: $new_image_id'\''",
-
-                "echo '\''컨테이너 실행'\''",
-                "sudo docker run --name devlounge-container --env-file /home/ec2-user/devlounge-app/.env -d -p 3000:3000 jjalseu/devlounge:latest",
-
-                "echo '\''최종 실행된 컨테이너 정보 확인'\''",
-                "sudo docker ps -a"
-              ]
-            }' \
-            --query "Command.CommandId" --output text)
-
-          aws ssm wait command-executed --instance-id "i-07b3e922cca70a01c" --command-id "$command_id" || true
+#      - name: Deploy application
+#        run: |
 #          aws ssm send-command \
 #          --instance-ids "i-07b3e922cca70a01c" \
 #          --document-name "AWS-RunShellScript" \
