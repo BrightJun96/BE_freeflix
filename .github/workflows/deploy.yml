@@ -36,20 +36,22 @@ jobs:
       - name: Deploy application
         run: |
           command_id=$(aws ssm send-command \
-                      --instance-ids "i-07b3e922cca70a01c" \
-                      --document-name "AWS-RunShellScript" \
-                      --parameters '{"commands":["cd /home/ec2-user/devlounge-app",
-                      "sudo docker pull --no-cache jjalseu/devlounge:latest",
-                      "sudo docker stop devlounge-container || true",
-                      "sudo docker rm -f devlounge-container || true",
-                      "sudo docker update --restart=no devlounge-container || true",
-                      "sudo docker container prune -f",
-                      "sudo docker run --name devlounge-container --env-file /home/ec2-user/devlounge-app/.env -d -p 3000:3000 jjalseu/devlounge:latest",
-                      "sleep 5",
-                      "sudo docker ps -a | tee /home/ec2-user/deploy_log.txt"]}' \
-                      --query "Command.CommandId" --output text)
-          
-          aws ssm wait command-executed --instance-id "i-07b3e922cca70a01c" --command-id "$command_id"
+            --instance-ids "i-07b3e922cca70a01c" \
+            --document-name "AWS-RunShellScript" \
+            --parameters '{"commands":["cd /home/ec2-user/devlounge-app",
+            "sudo docker pull --no-cache jjalseu/devlounge:latest || true",
+            "sudo docker stop devlounge-container || true",
+            "sudo docker rm -f devlounge-container || true",
+            "sudo docker update --restart=no devlounge-container || true",
+            "sudo docker container prune -f || true",
+            "sudo docker run --name devlounge-container --env-file /home/ec2-user/devlounge-app/.env -d -p 3000:3000 jjalseu/devlounge:latest || true",
+            "sleep 5",
+            "sudo docker logs devlounge-container || true",
+            "sudo docker ps -a | tee /home/ec2-user/deploy_log.txt"]}' \
+            --query "Command.CommandId" --output text)
+
+          aws ssm wait command-executed --instance-id "i-07b3e922cca70a01c" --command-id "$command_id" || true
+
 #            aws ssm send-command \
 #                  --instance-ids "i-07b3e922cca70a01c" \
 #                  --document-name "AWS-RunShellScript" \
