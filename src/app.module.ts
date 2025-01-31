@@ -28,15 +28,9 @@ import { BearerTokenMiddleware } from "./auth/middleware/bearer-token.middleware
 import { ChatModule } from "./chat/chat.module";
 import { ChatRoom } from "./chat/entities/chat-room.entity";
 import { Chat } from "./chat/entities/chat.entity";
-import { DirectorModule } from "./director/director.module";
-import { Director } from "./director/entities/director.entity";
+
 import { FileUploadModule } from "./file-upload/file-upload.module";
-import { Genre } from "./genre/entities/genre.entity";
-import { GenreModule } from "./genre/genre.module";
-import { MovieDetail } from "./movie/entities/movie-detail.entity";
-import { MovieUserLike } from "./movie/entities/movie-user-like.entity";
-import { Movie } from "./movie/entities/movie.entity";
-import { MovieModule } from "./movie/movie.module";
+
 import { MultipleChoice } from "./quiz/entities/multiple-choice.entity";
 import { QuizMetaData } from "./quiz/entities/quiz-meta-data.entity";
 import { Quiz } from "./quiz/entities/quiz.entity";
@@ -105,11 +99,6 @@ import { WorkerModule } from "./worker/worker.module";
           envVariablesKeys.DB_DATABASE,
         ),
         entities: [
-          Movie,
-          MovieDetail,
-          MovieUserLike,
-          Director,
-          Genre,
           User,
           Chat,
           ChatRoom,
@@ -117,7 +106,7 @@ import { WorkerModule } from "./worker/worker.module";
           QuizMetaData,
           MultipleChoice,
         ],
-        // synchronize: true,
+        synchronize: true,
         ssl: {
           rejectUnauthorized: false,
         },
@@ -140,9 +129,6 @@ import { WorkerModule } from "./worker/worker.module";
       rootPath: join(process.cwd(), "public"),
       serveRoot: "/public/",
     }),
-    MovieModule,
-    DirectorModule,
-    GenreModule,
     AuthModule,
     UserModule,
     FileUploadModule,
@@ -151,7 +137,7 @@ import { WorkerModule } from "./worker/worker.module";
       store: redisStore,
       host: process.env.REDIS_HOST,
       port: process.env.REDIS_PORT,
-      password: process.env.REDIS_PASSWORD, // ✅ Redis 비밀번호 추가
+      password: process.env.REDIS_PASSWORD,
       ttl: 10, // 초단위로 적용
       isGlobal: true,
     }),

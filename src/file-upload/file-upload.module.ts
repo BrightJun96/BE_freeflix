@@ -5,7 +5,7 @@ import e from "express";
 import { diskStorage } from "multer";
 import { join } from "path";
 import { v4 } from "uuid";
-import { MIME_TYPE } from "../movie/constant/mime-type";
+import { MIME_TYPE } from "./constant/mime-type";
 import { FileUploadController } from "./file-upload.controller";
 import { FileUploadService } from "./file-upload.service";
 
@@ -41,10 +41,10 @@ import { FileUploadService } from "./file-upload.service";
     }),
     BullModule.forRoot({
       connection: {
-        host: "redis-19000.c340.ap-northeast-2-1.ec2.redns.redis-cloud.com",
-        port: 19000,
         username: "default",
-        password: "kHosdhpR9r5inhZxOoBzyhx6Q5Ky0EH5",
+        host: process.env.REDIS_HOST,
+        port: +process.env.REDIS_PORT,
+        password: process.env.REDIS_PASSWORD,
       },
     }),
     BullModule.registerQueue({
