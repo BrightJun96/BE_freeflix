@@ -43,7 +43,7 @@ import { FileUploadService } from "./file-upload.service";
       connection: {
         username: "default",
         host: process.env.REDIS_HOST,
-        port: +process.env.REDIS_PORT,
+        port: parseInt(process.env.REDIS_PORT),
         password: process.env.REDIS_PASSWORD,
       },
     }),
